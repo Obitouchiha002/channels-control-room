@@ -321,6 +321,7 @@ function detail(ch, ep, id){
     ${row('Channel', ch)}${row('Type', u.kind === 'short' ? 'Short / Reel' : 'Long video')}
     ${row('▶ YouTube', (live ? '🟢 Live — ' : '📅 Scheduled — ') + (fmtDT(u.when) || u.when_ist || ''))}${row('📸 Instagram', p.instagram ? '✅ ' + fmtDT(p.instagram) : (L.instagram ? '✅' : '—  abhi nahi'))}
     ${row('📘 Facebook', p.facebook ? '✅ ' + fmtDT(p.facebook) : (L.facebook ? '✅' : '—  abhi nahi'))}${row('⏱ Banne mein', u.took)}${row('Folder', u.ep)}</div></div></div>
+    ${u.cover ? `<div class="mb" style="padding-top:0"><div class="acct" style="display:block;line-height:1.6">🖼️ <b>Cover</b> — Instagram par purana/kaala cover ho to: neeche se cover save karo → Instagram app → Reel → ⋯ → <b>Edit</b> → <b>Edit cover</b> → <b>Add from camera roll</b> → ye image → Done.<br><a class="btn primary" href="${esc(u.cover)}" download="${esc(u.ep)}-cover.jpg" target="_blank" rel="noopener" style="margin-top:8px">⬇ Cover save karo</a></div></div>` : ''}
     <div class="mf">${links(u, ch)}</div></div>`;
   m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.remove(); }); document.body.appendChild(m);
 }
