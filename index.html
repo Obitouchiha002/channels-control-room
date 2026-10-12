@@ -425,6 +425,10 @@ function fmtDT(v){
 }
 const dt = (v, fb) => { const f = fmtDT(v) || fb || ''; return f ? `<b class="dt">${esc(f)}</b>` : ''; };
 const linkify = h => h.replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;word-break:break-all">${u.length > 60 ? u.slice(0, 45) + '… (tap karo)' : u}</a>`);
+// first link in a notification → one big button named after the platform
+const openBtn = t => { const u = (t.match(/https?:\/\/[^\s<]+/) || [])[0]; if (!u) return '';
+  const p = /youtu/.test(u) ? ['▶ YouTube par dekho', 'yt'] : /instagram/.test(u) ? ['📸 Instagram par dekho', 'ig'] : /facebook/.test(u) ? ['📘 Facebook par dekho', 'fb'] : /drive\.google/.test(u) ? ['📁 Drive kholo', 'dr'] : ['🔗 Kholo', 'st'];
+  return `<a class="lk ${p[1]}" href="${u}" target="_blank" rel="noopener" style="display:inline-block;margin:6px 0 2px;padding:6px 12px;font-size:14px">${p[0]}</a>`; };
 const msgsHtml = () => CH.cur ? CH.msgs.filter(m => m.from !== 'wait').map(m => `<div class="msg ${m.from}">${linkify(esc(m.text))}<span class="at">${m.from === 'claude' ? 'Claude · ' : ''}${tIST(m.at)}${m.from === 'owner' ? ' ✓' : ''}</span></div>`).join('') + stageHtml()
   : '<div class="empty">Neeche likho ya ek chip dabao — jawaab yahin aayega.</div>';
 const threadsHtml = () => CH.threads.map(t => `<button class="th ${t.number === CH.cur ? 'on' : ''}" data-thn="${t.number}"><b>${esc(t.title)}</b><span>${t.state === 'closed' ? '✅' : '💬'} ${tIST(t.updated_at)} · ${t.comments} msgs</span></button>`).join('') || '<div class="empty" style="padding:14px">Abhi koi baat nahi</div>';
@@ -537,7 +541,7 @@ function render(){
 }
 function toast(t){ const n = document.createElement('div'); n.textContent = t; n.style.cssText = 'position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;z-index:9;max-width:90%'; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
 document.addEventListener('click', e => {
-  const op = e.target.closest('[data-open]'); if (op) { op.classList.toggle('open'); return; }
+  const op = !e.target.closest('a') && e.target.closest('[data-open]'); if (op) { op.classList.toggle('open'); return; }
   const dt = !e.target.closest('a') && e.target.closest('[data-det]'); if (dt) { const [c, ep, id] = dt.dataset.det.split('|'); detail(c, ep, id); return; }
   const sb = e.target.closest('[data-scmd]'); if (sb) { document.querySelector('.modal')?.remove(); sendCmd(sb.dataset.scmd); return; }
   const sc = e.target.closest('[data-script]'); if (sc) { const [ch, id] = sc.dataset.script.split('|'); openScript(ch, id); return; }
