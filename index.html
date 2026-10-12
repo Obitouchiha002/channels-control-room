@@ -127,6 +127,9 @@ a{color:inherit}button{font:inherit;cursor:pointer;color:inherit}
 .modal .mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
 .sc-steps{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}.sc-steps span{font-size:10.5px;border-radius:6px;padding:2px 6px;background:var(--panel2);color:var(--muted)}
 .sc-steps span.y{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}.sc-steps span.n{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.state{display:inline-flex;align-items:center;gap:6px;font-size:12px;border-radius:8px;padding:3px 8px;margin-top:6px}
+.state.running{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}.state.queued{color:var(--accent);background:var(--accent2)}.state.stuck{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.state.running::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 1.6s infinite}
 .qa{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}.qa button{text-align:left;border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:10px 12px;font-size:13px}
 .qa button:hover{border-color:var(--accent)}
 .chatwrap{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 110px);min-height:520px;overflow:hidden}
@@ -217,9 +220,9 @@ const chObj = n => D.channels.find(c => c.name === n) || {};
 const links = (u, c) => `${u.id ? `<a class="lk yt" href="https://youtu.be/${esc(u.id)}" target="_blank" rel="noopener">▶ YouTube</a><a class="lk st" href="https://studio.youtube.com/video/${esc(u.id)}/edit" target="_blank" rel="noopener">Studio</a>` : ''}${(u.links || {}).instagram ? `<a class="lk ig" href="${esc(u.links.instagram)}" target="_blank" rel="noopener">Instagram</a>` : ''}${(u.links || {}).facebook ? `<a class="lk fb" href="${esc(u.links.facebook)}" target="_blank" rel="noopener">Facebook</a>` : ''}${(u.links || {}).drive ? `<a class="lk dr" href="${esc(u.links.drive)}" target="_blank" rel="noopener">Drive</a>` : ''}`;
 const img = (src, cls) => src ? `<img class="${cls}" src="${esc(src)}" loading="lazy" alt="" onerror="this.style.visibility='hidden'">` : `<div class="${cls}"></div>`;
 const vRow = (u, c) => `<div class="vrow">${img(u.thumb, u.kind === 'short' ? 'th9' : 'th16')}<div class="vinfo"><span class="t">${esc(u.title)}</span>
-  <div class="m"><span class="ch-dot ch-${chKey(c)}"></span><span class="tag ${u.kind}">${u.kind === 'short' ? 'Short' : 'Long'}</span><span class="when">${esc(u.when_ist)}</span>${links(u, c)}</div></div></div>`;
+  <div class="m"><span class="ch-dot ch-${chKey(c)}"></span><span class="tag ${u.kind}">${u.kind === 'short' ? 'Short' : 'Long'}</span><span class="when">${esc(u.when_ist)}${u.took ? ` · ⏱ ${esc(u.took)}` : ''}</span>${links(u, c)}</div></div></div>`;
 const vCard = u => { const c = chObj(u.ch); return `<div class="card vcard"><div class="cov ${u.kind}">${img(u.thumb, '')}<span class="tag ${u.kind} badge">${u.kind === 'short' ? 'Short' : 'Long'}</span>${c.logo ? `<img class="chl" src="${esc(c.logo)}" alt="">` : ''}</div>
-  <div class="vb"><b>${esc(u.title)}</b><div class="when" style="margin:4px 0 6px">${esc(u.when_ist)}</div><div class="m" style="display:flex;gap:5px;flex-wrap:wrap">${links(u, u.ch)}</div></div></div>`; };
+  <div class="vb"><b>${esc(u.title)}</b><div class="when" style="margin:4px 0 6px">${esc(u.when_ist)}${u.took ? ` · ⏱ ${esc(u.took)} mein bana` : ''}</div><div class="m" style="display:flex;gap:5px;flex-wrap:wrap">${links(u, u.ch)}</div></div></div>`; };
 const vRowOld = (u, c) => `<div class="row"><span class="ch-dot ch-${chKey(c)}" title="${esc(c)}"></span><span class="tag ${u.kind}">${u.kind === 'short' ? 'Short' : 'Long'}</span>
   <span class="t">${u.id ? `<a href="https://studio.youtube.com/video/${esc(u.id)}/edit" target="_blank" rel="noopener">${esc(u.title)}</a>` : esc(u.title)}</span><span class="when">${esc(u.when_ist)}</span></div>`;
 const upcoming = () => D.channels.flatMap(c => c.upcoming.map(u => ({...u, ch:c.name}))).sort((a, b) => a.when < b.when ? -1 : 1);
@@ -229,7 +232,7 @@ const feedHtml = n => (D.activity || []).slice(0, n).map(f => `<div class="it"><
   <div class="tx"><div>${esc(f.text)}</div><span class="when">${esc(f.ch)} · ${esc(f.at_h)}</span></div></div>`).join('') || '<div class="empty">Abhi koi activity nahi</div>';
 const epHtml = e => { const i = Math.max(0, STEPS.indexOf(e.stage));
   return `<div class="ep" style="display:flex;gap:12px">${e.thumb ? img(e.thumb, e.kind === 'short' ? 'th9' : 'th16') : ''}<div style="flex:1;min-width:0"><div class="row" style="padding:0;border:0"><span class="ch-dot ch-${chKey(e.ch)}"></span><span class="tag ${e.kind}">${e.kind === 'short' ? 'Short' : 'Long'}</span><span class="t">${esc(e.title)}</span><span class="when">${esc(e.stage)}</span></div>
-  ${e.kind === 'long' ? `<div class="steps">${STEPS.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div>` : ''}${e.note ? `<div class="meta">${esc(e.note)}</div>` : ''}</div></div>`; };
+  ${e.kind === 'long' ? `<div class="steps">${STEPS.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div>` : ''}${e.state && e.state.text ? `<div class="state ${e.state.s}">${esc(e.state.text)}${e.state.eta ? ` · <b>${e.state.s === 'running' ? 'ETA' : 'Agla run'}: ${esc(e.state.eta)}</b>` : ''}</div>` : ''}${e.note ? `<div class="meta">${esc(e.note)}</div>` : ''}</div></div>`; };
 
 function home(){
   const al = allAlerts();
@@ -285,17 +288,52 @@ function openScript(ch, id){
     <a class="btn" target="_blank" rel="noopener" href="${cmd(`${ch} ${x.id} ko roko — upload mat karna, mujhse poochna`)}">⏸ Roko</a></div></div>`;
   m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.remove(); }); document.body.appendChild(m);
 }
+// ---- chat: live via the GitHub API when the owner saved his token on this device; else the old open-GitHub fallback
+const API = 'https://api.github.com/repos/Obitouchiha002/channels-autopilot';
+const TOK = () => { try { return localStorage.getItem('gh_tok') || '' } catch (e) { return '' } };
+let CH = {threads: null, cur: null, msgs: [], busy: false, poll: null};
+async function gh(path, opt = {}){
+  const r = await fetch(API + path, {...opt, headers: {'Authorization': 'Bearer ' + TOK(), 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json', ...(opt.headers || {})}});
+  if (!r.ok) throw new Error(r.status + ' ' + (await r.text()).slice(0, 120)); return r.status === 204 ? null : r.json();
+}
+const asMsgs = (issue, comments) => [{from:'owner', text:(issue.title + (issue.body && issue.body !== issue.title ? '\n' + issue.body : '')).trim(), at:issue.created_at}]
+  .concat(comments.map(c => ({from: c.body.startsWith('🤖') ? 'claude' : c.body.startsWith('⏳') ? 'wait' : 'owner', text: c.body.replace(/^🤖🔁?\s*/, ''), at: c.created_at})));
+async function chatLoad(){
+  if (!TOK()) return;
+  try {
+    CH.threads = await gh('/issues?labels=command&state=all&per_page=20');
+    if (CH.cur) { const iss = CH.threads.find(t => t.number === CH.cur) || await gh('/issues/' + CH.cur); CH.msgs = asMsgs(iss, await gh(`/issues/${CH.cur}/comments?per_page=100`)); }
+    if (VIEW === 'chat') render();
+  } catch (e) { if (String(e).startsWith('Error: 401')) { toast('Token galat/expire — dobara jodo'); try { localStorage.removeItem('gh_tok') } catch (x) {} render(); } }
+}
+function chatPoll(on){ clearInterval(CH.poll); if (on && TOK()) CH.poll = setInterval(chatLoad, 6000); }
+const tIST = iso => new Date(iso).toLocaleString('en-IN', {timeZone:'Asia/Kolkata', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
 function chat(){
-  const ts = D.commands || []; const t = TH >= 0 ? ts[TH] : null;
-  const st = s => s === 'replied' ? '🤖 jawaab aaya' : s === 'working' ? '⏳ soch raha' : s === 'done' ? '✅ band' : '🕒';
+  if (!TOK()) return `<div class="card" style="padding:18px;max-width:640px"><h2 style="margin:0 0 6px;font-size:16px">💬 Chat ko ek baar jodo (2 minute)</h2>
+    <div class="sub" style="font-size:13px;line-height:1.6">Normal chat (yahin likho, yahin jawaab) ke liye ek chhota GitHub token chahiye jo <b>sirf is repo ki chat</b> tak simit ho. Ye sirf is device pe save rehta hai.<br>
+    1) <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com → Fine-grained token</a> kholo · Name: <code>control-room-chat</code> · Expiration: 1 year<br>
+    2) Repository access: <b>Only select repositories → channels-autopilot</b><br>3) Permissions → Repository → <b>Issues: Read and write</b> (bas yahi) → Generate → copy</div>
+    <input id="tokin" class="field" type="password" placeholder="github_pat_…" style="margin-top:12px"><button class="btn primary" id="toksave">Jodo</button></div>`;
+  if (!CH.threads) { chatLoad(); return '<div class="card" style="padding:18px"><div class="empty">Chat load ho rahi hai…</div></div>'; }
+  const st = t => t.state === 'closed' ? '✅' : '💬';
+  const waiting = CH.cur && CH.msgs.length && (CH.msgs[CH.msgs.length - 1].from !== 'claude');
   return `<div class="card chatwrap ${LIST ? 'list' : ''}"><div class="threads"><button class="btn primary newb" id="newchat">+ Nayi baat</button>
-    ${ts.map((x, k) => `<button class="th ${k === TH ? 'on' : ''}" data-th="${k}"><b>${esc(x.title)}</b><span>${st(x.status)} · ${esc(x.at)}</span></button>`).join('') || '<div class="empty" style="padding:14px">Abhi koi baat nahi</div>'}</div>
-    <div class="conv"><div class="chd"><button class="btn backth" id="backth" style="padding:6px 8px">${icon('back', 16)}</button><b>${t ? esc(t.title) : 'Nayi baat'}</b>${t ? `<a class="pill" href="${esc(t.url)}" target="_blank" rel="noopener">GitHub</a>` : ''}</div>
-      <div class="msgs" id="msgs">${t ? t.messages.map(m => `<div class="msg ${m.from}">${esc(m.text)}<span class="at">${m.from === 'claude' ? 'Claude · ' : ''}${esc(m.at)}</span></div>`).join('') + (t.status === 'working' ? '<div class="typing">Claude soch raha hai…</div>' : '')
-        : '<div class="empty">Neeche likho ya ek chip dabao — Claude 1–2 minute mein yahin jawaab dega.</div>'}</div>
+    ${CH.threads.map(t => `<button class="th ${t.number === CH.cur ? 'on' : ''}" data-thn="${t.number}"><b>${esc(t.title)}</b><span>${st(t)} ${tIST(t.updated_at)} · ${t.comments} msgs</span></button>`).join('') || '<div class="empty" style="padding:14px">Abhi koi baat nahi</div>'}</div>
+    <div class="conv"><div class="chd"><button class="btn backth" id="backth" style="padding:6px 8px">${icon('back', 16)}</button><b>${CH.cur ? esc((CH.threads.find(t => t.number === CH.cur) || {}).title || 'Baat') : 'Nayi baat'}</b>${CH.cur ? '<span class="pill"><span class="dot"></span>live</span>' : ''}</div>
+      <div class="msgs" id="msgs">${CH.cur ? CH.msgs.filter(m => m.from !== 'wait').map(m => `<div class="msg ${m.from}">${esc(m.text)}<span class="at">${m.from === 'claude' ? 'Claude · ' : ''}${tIST(m.at)}</span></div>`).join('') + (waiting ? '<div class="typing">● ● ● Claude soch raha hai… (1–2 min)</div>' : '')
+        : '<div class="empty">Neeche likho ya ek chip dabao — jawaab yahin aayega.</div>'}</div>
       <div class="composer"><div class="chips">${['Aaj kya live hoga?','Kal ka plan batao','Koi problem hai?','Is hafte ke numbers','Navratri Short daal do'].map(q => `<button data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
-      <div class="cbox"><textarea id="ctext" placeholder="${t && t.status !== 'done' ? 'Isi baat mein aage likho…' : 'Claude se kuch bhi kaho…'}"></textarea><button class="btn primary" id="csend" title="Bhejo">${icon('send')}</button></div>
-      <div class="note">Bhejne par GitHub khulega — wahan Submit / Comment dabao (aapka login = suraksha).</div></div></div></div>`;
+      <div class="cbox"><textarea id="ctext" placeholder="Message likho…"></textarea><button class="btn primary" id="csend" title="Send" ${CH.busy ? 'disabled' : ''}>${icon('send')}</button></div>
+      <div class="note">Enter = send · Shift+Enter = nayi line</div></div></div></div>`;
+}
+async function chatSend(){
+  const ta = $('#ctext'); const txt = ta.value.trim(); if (!txt || CH.busy) return; CH.busy = true;
+  try {
+    if (CH.cur) { await gh(`/issues/${CH.cur}/comments`, {method:'POST', body: JSON.stringify({body: txt})}); }
+    else { const iss = await gh('/issues', {method:'POST', body: JSON.stringify({title: txt.slice(0, 80), body: txt, labels: ['command']})}); CH.cur = iss.number; }
+    CH.msgs.push({from:'owner', text: txt, at: new Date().toISOString()}); ta.value = ''; await chatLoad();
+  } catch (e) { toast('Send nahi hua: ' + String(e).slice(0, 80)); }
+  CH.busy = false; render();
 }
 function channels(){
   return `<div class="grid2" style="grid-template-columns:1fr 1fr">${D.channels.map(c => { const st = c.stats || {}, so = c.social || {};
@@ -338,21 +376,23 @@ function toast(t){ const n = document.createElement('div'); n.textContent = t; n
 document.addEventListener('click', e => {
   const sc = e.target.closest('[data-script]'); if (sc) { const [ch, id] = sc.dataset.script.split('|'); openScript(ch, id); return; }
   const b = e.target.closest('button'); if (!b || b.form) return;
-  if (b.dataset.go) { VIEW = b.dataset.go; if (b.dataset.tab) TAB = b.dataset.tab; LIST = VIEW === 'chat' && innerWidth <= 820; render(); scrollTo(0, 0); return; }
+  if (b.dataset.go) { VIEW = b.dataset.go; if (b.dataset.tab) TAB = b.dataset.tab; LIST = VIEW === 'chat' && innerWidth <= 820 && !CH.cur; chatPoll(VIEW === 'chat'); render(); scrollTo(0, 0); return; }
   if (b.dataset.tab) { TAB = b.dataset.tab; render(); return; }
   if (b.dataset.f) { FILT = b.dataset.f; render(); return; }
   if (b.dataset.th) { TH = +b.dataset.th; LIST = false; render(); return; }
+  if (b.dataset.thn) { CH.cur = +b.dataset.thn; CH.msgs = []; LIST = false; chatLoad(); return; }
+  if (b.id === 'toksave') { const v = $('#tokin').value.trim(); if (!v) return; try { localStorage.setItem('gh_tok', v) } catch (x) {} CH.threads = null; render(); chatPoll(true); return; }
   if (b.id === 'backth') { LIST = true; render(); return; }
-  if (b.id === 'newchat') { TH = -1; LIST = false; render(); $('#ctext')?.focus(); return; }
+  if (b.id === 'newchat') { TH = -1; CH.cur = null; CH.msgs = []; LIST = false; render(); $('#ctext')?.focus(); return; }
+  if (b.dataset.cmd && TOK()) { VIEW = 'chat'; CH.cur = null; render(); $('#ctext').value = b.dataset.cmd; chatSend(); chatPoll(true); return; }
   if (b.dataset.cmd) { window.open(REPO + '/issues/new?labels=command&title=' + encodeURIComponent(b.dataset.cmd.slice(0, 80)) + '&body=' + encodeURIComponent(b.dataset.cmd), '_blank'); toast('GitHub pe Submit dabao — Claude 1–2 min mein kar dega'); return; }
   if (b.dataset.q) { const t = $('#ctext'); t.value = b.dataset.q; t.focus(); return; }
-  if (b.id === 'csend') { const txt = $('#ctext').value.trim(); if (!txt) return; const t = TH >= 0 ? (D.commands || [])[TH] : null;
-    if (t && t.status !== 'done') { navigator.clipboard?.writeText(txt).catch(() => {}); window.open(t.url + '#issue-comment-box', '_blank'); toast('Message copy ho gaya — GitHub pe paste karke Comment dabao'); }
-    else window.open(REPO + '/issues/new?labels=command&title=' + encodeURIComponent(txt.slice(0, 80)) + '&body=' + encodeURIComponent(txt), '_blank');
-    return; }
+  if (b.id === 'csend') { if (TOK()) { chatSend(); return; } const txt = $('#ctext').value.trim(); if (!txt) return;
+    window.open(REPO + '/issues/new?labels=command&title=' + encodeURIComponent(txt.slice(0, 80)) + '&body=' + encodeURIComponent(txt), '_blank'); return; }
   if (b.dataset.act === 'refresh') { load(true); return; }
   if (b.dataset.act === 'theme') { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; try { localStorage.setItem('theme', t) } catch (x) {} }
 });
+document.addEventListener('keydown', e => { if (e.target.id === 'ctext' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#csend')?.click(); } });
 async function load(say){ try { D = await decrypt(PW); render(); if (say) toast('Updated ✓'); } catch (e) {} }
 try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t } catch (e) {}
 async function start(pw, remember){
