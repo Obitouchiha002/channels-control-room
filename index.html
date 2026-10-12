@@ -69,6 +69,12 @@ a{color:inherit}
 #gate input{width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);margin:14px 0 10px}
 #err{color:var(--bad);font-size:13px;min-height:18px}
 .switch{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cmd{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-bottom:18px;box-shadow:var(--shadow)}
+.cmd h2{font-size:16px;margin:0 0 4px}.cmd textarea{width:100%;min-height:74px;font:inherit;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);resize:vertical;margin:8px 0}
+.cmd .hist{margin-top:10px}.cmd .hrow{border-top:1px solid var(--line);padding:9px 0}.cmd .hrow:first-child{border-top:0}
+.st{font-size:11px;font-weight:600;border-radius:6px;padding:2px 7px;margin-right:6px}.st.done{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.st.working{color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}.st.queued{color:var(--muted);background:var(--panel2)}
+.reply{white-space:pre-wrap;font-size:13px;color:var(--muted);margin-top:4px;max-height:160px;overflow:auto}
 footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
 </style>
 </head>
@@ -112,8 +118,14 @@ function render(d){
     <button disabled title="Cloud runner not built yet — see runner.json">Switch to cloud</button>
     <button id="theme" aria-label="Toggle theme">◐</button></div></header>
     ${alerts.length ? `<div class="alerts"><h2>Needs attention</h2><ul>${alerts.join('')}</ul></div>` : '<div class="ok-banner">✓ Everything is running fine</div>'}
+    <div class="cmd"><h2>Claude ko command do</h2><div class="sub">Hinglish mein likho — e.g. "Qirvello pe aaj ek Krishna wali Short daal do". Bhejo dabane par GitHub khulega, wahan Submit dabana (aapka login = suraksha). Mac har 5 min mein uthata hai.</div>
+      <textarea id="cmdtext" placeholder="Kya karna hai?"></textarea><button class="primary" id="cmdsend">Bhejo →</button>
+      <div class="hist">${(d.commands || []).map(c => `<div class="hrow"><span class="st ${c.status}">${c.status === 'done' ? '✅ ho gaya' : c.status === 'working' ? '⏳ chal raha' : '🕒 line mein'}</span>
+        <a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a> <span class="when">${esc(c.at)}</span>${c.reply ? `<div class="reply">${esc(c.reply)}</div>` : ''}</div>`).join('') || '<div class="empty">Abhi koi command nahi</div>'}</div></div>
     <div class="grid">${d.channels.map(channel).join('')}</div>
     <footer>Private dashboard · data encrypted with your passcode</footer>`;
+  $('#cmdsend').onclick = () => { const t = $('#cmdtext').value.trim(); if (!t) return;
+    window.open('https://github.com/Obitouchiha002/channels-autopilot/issues/new?labels=command&title=' + encodeURIComponent(t.slice(0, 80)) + '&body=' + encodeURIComponent(t), '_blank'); };
   $('#theme').onclick = () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; try{localStorage.setItem('theme', t)}catch(e){} };
 }
 try{ const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t }catch(e){}
