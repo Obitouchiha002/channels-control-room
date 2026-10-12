@@ -166,7 +166,7 @@ async function decrypt(pw){
 const chKey = n => /nyx/i.test(n) ? 'nyxav' : 'qirvello';
 const allAlerts = () => D.channels.flatMap(c => c.alerts.map(a => ({ch:c.name, a})));
 const sum = f => D.channels.reduce((t, c) => t + (+f(c) || 0), 0);
-const jobCls = s => s === 'ok' ? 's-ok' : s.startsWith('failed') ? 's-bad' : s === 'running' ? 's-run' : 's-idle';
+const jobCls = s => s === 'ok' ? 's-ok' : s.startsWith('failed') ? 's-bad' : (s === 'running' || s.startsWith('AI limit')) ? 's-run' : 's-idle';
 const STEPS = ['research','script','factcheck','plan','visuals','voice','render','qa','seo','benchmark','upload'];
 
 function kpis(){
