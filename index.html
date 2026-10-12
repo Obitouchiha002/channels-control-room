@@ -335,8 +335,8 @@ function inbox(){
 }
 // ---- ⚙️ settings: chat connection, AI, pause, logins, this device + the system/jobs view
 function settings(){
-  const r = D.runner || {}, paused = r.paused || [], age = D.ts ? Math.round((Date.now() / 1000 - D.ts) / 60) : null;
-  const mac = age == null ? '?' : age <= 25 ? `🟢 Online (${age} min pehle update)` : `🔴 Band / offline — last ${esc(D.generated)}`;
+  const r = D.runner || {}, paused = r.paused || [], seen = D.mac_seen || D.ts, age = seen ? Math.round((Date.now() / 1000 - seen) / 60) : null;
+  const mac = age == null ? '?' : age <= 30 ? `🟢 Online (${age} min pehle)` : `🔴 Band — ${age < 120 ? age + ' min' : Math.round(age / 60) + ' ghante'} se · ☁️ cloud kaam chala raha hai`;
   const seg = (k, opts, cur) => `<div class="filter" style="margin:0;flex-wrap:wrap;overflow:visible">${opts.map(([v, l]) => `<button data-set="${k}=${v}" class="${cur === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
   const okp = b => `<span class="pill" style="${b ? '' : 'background:var(--warn);color:#fff'}">${b ? '✅ Juda hai' : '⚠️ Dekho'}</span>`;
   const logins = [].concat(D.channels.map(c => [`YouTube — ${c.name}`, !!c.stats || !(c.alerts || []).some(a => /login|token|auth/i.test(a))]),
@@ -344,10 +344,11 @@ function settings(){
     (D.ai || []).map(a => [a.name, a.status === 'ok']), [['Google Drive (archive)', true], ['Phone alerts (ntfy)', true]]);
   return `<div class="stack">
    <div class="card"><div class="hd"><h2>🖥️ Mac / Cloud</h2></div><div class="bd"><div class="row"><span class="t">Mac</span><span class="when">${mac}</span></div>
-     <div class="row"><span class="t">Mac band ho to</span><span class="when">Chat ka jawaab cloud se aata hai · scheduled videos YouTube khud live karta hai</span></div></div></div>
+     <div class="row"><span class="t">Mac band ho to</span><span class="when">☁️ Cloud apne aap: Shorts banana + upload, IG/FB posts, Drive archive, dashboard update, chat ke jawaab. Quality wahi — Gemini voice khatam ho to cloud wait karta hai, kamzor awaaz nahi lagata.</span></div>
+     <div class="row"><span class="t">Ye data</span><span class="when">${D.by === 'cloud' ? '☁️ Cloud ne banaya' : '🖥️ Mac ne banaya'} · ${esc(D.generated)}</span></div></div></div>
    <div class="card"><div class="hd"><h2>🧠 AI</h2></div><div class="bd"><div class="row"><span class="t">Kaun kaam kare</span>${seg('brain', [['claude','Sirf Claude'],['auto','Claude → Codex'],['codex','Sirf Codex']], r.brain || 'auto')}</div></div></div>
    <div class="card"><div class="hd"><h2>⏯️ Channels</h2></div><div class="bd">${[['doc-channel','Nyxav Media'],['kahani-channel','Qirvello']].map(([k, n]) => `<div class="row"><span class="t">${n}</span>${seg(paused.includes(k) ? 'resume' : 'pause', paused.includes(k) ? [[k, '▶ Phir chalu karo']] : [[k, '⏸ Roko (naya kaam band)']], '')}<span class="when">${paused.includes(k) ? '⏸ Ruka hua' : '▶ Chal raha'}</span></div>`).join('')}</div></div>
-   <div class="card"><div class="hd"><h2>🔑 Logins / accounts</h2></div><div class="bd">${logins.map(([n, ok]) => `<div class="row"><span class="t">${esc(n)}</span>${okp(ok)}<button class="btn" data-cmd="Mujhe '${esc(n)}' ka login badalna / dobara karna hai — step-by-step batao aur link do jo main phone se khol sakun" style="padding:5px 10px">Badlo</button></div>`).join('')}</div></div>
+   <div class="card"><div class="hd"><h2>🔑 Logins / accounts</h2></div><div class="bd">${logins.map(([n, ok]) => `<div class="row"><span class="t">${esc(n)}</span>${okp(ok)}${n.startsWith('YouTube') ? `<button class="btn" data-cmd="⚙️ login youtube=${n.includes('Nyxav') ? 'nyxav' : 'qirvello'}" style="padding:5px 10px">📱 Phone se login</button>` : `<button class="btn" data-cmd="Mujhe '${esc(n)}' ka login badalna / dobara karna hai — step-by-step batao aur link do jo main phone se khol sakun" style="padding:5px 10px">Badlo</button>`}</div>`).join('')}</div></div>
    <div class="card"><div class="hd"><h2>📱 Is device par</h2></div><div class="bd">
      <div class="row"><span class="t">Chat connection</span><span class="when">${TOK() ? '✅ Juda hai' : '❌ Nahi juda'}</span>${TOK() ? '<button class="btn" data-act="untok" style="padding:5px 10px">Hatao</button>' : '<button class="btn primary" data-go="chat" style="padding:5px 10px">Jodo</button>'}</div>
      <div class="row"><span class="t">Passcode yaad</span><button class="btn" data-act="logout" style="padding:5px 10px">Log out</button></div>
