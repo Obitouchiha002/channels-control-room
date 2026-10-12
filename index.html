@@ -120,6 +120,15 @@ a{color:inherit}button{font:inherit;cursor:pointer;color:inherit}
 .st-b.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}.st-b.limited{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}.st-b.down{color:var(--bad);background:color-mix(in srgb,var(--bad) 13%,transparent)}
 .aic ul{margin:10px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}.aic .d{font-size:13px;margin-top:8px}
 .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}.flow span{background:var(--panel2);border-radius:9px;padding:5px 10px}
+.modal{position:fixed;inset:0;background:rgba(10,8,14,.55);z-index:20;display:grid;place-items:center;padding:16px}
+.modal .box{background:var(--panel);border-radius:20px;width:min(720px,100%);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.modal .mh{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}.modal .mh b{flex:1}
+.modal .mb{padding:14px 18px;overflow:auto}.modal .mb ol{margin:0;padding-left:22px;font-size:14px;line-height:1.7}
+.modal .mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+.sc-steps{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}.sc-steps span{font-size:10.5px;border-radius:6px;padding:2px 6px;background:var(--panel2);color:var(--muted)}
+.sc-steps span.y{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}.sc-steps span.n{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.qa{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}.qa button{text-align:left;border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:10px 12px;font-size:13px}
+.qa button:hover{border-color:var(--accent)}
 .chatwrap{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 110px);min-height:520px;overflow:hidden}
 .threads{border-right:1px solid var(--line);overflow:auto}
 .threads .newb{margin:12px;width:calc(100% - 24px);justify-content:center}
@@ -230,21 +239,51 @@ function home(){
     <div class="card"><div class="hd"><h2>📅 Aage kya live hoga</h2><button class="more" data-go="content" data-tab="scheduled">Sab dekho →</button></div><div class="bd">${upcoming().slice(0, 6).map(u => vRow(u, u.ch)).join('') || '<div class="empty">Kuch scheduled nahi</div>'}</div></div>
     <div class="card"><div class="hd"><h2>🛠️ Abhi ban raha hai</h2><button class="more" data-go="content" data-tab="making">Sab dekho →</button></div><div class="bd">${making().slice(0, 5).map(epHtml).join('') || '<div class="empty">Workshop khaali</div>'}</div></div>
   </div><div class="stack">
+    <div class="card"><div class="hd"><h2>⚡ Quick actions</h2></div><div class="bd" style="padding-top:12px"><div class="qa">${[
+      ['🎬 Aaj ke Shorts abhi banao','Dono channels ke agle Shorts abhi bana ke schedule kar do (jo ready hain).'],
+      ['⏸ Qirvello Shorts 1 din roko','Qirvello ke Shorts aaj ke liye rok do, kal se wapas.'],
+      ['🧠 AI → sirf Codex','runner.json mein brain = codex kar do (Claude ko skip karo) aur bata do.'],
+      ['🧠 AI → Auto','runner.json mein brain = auto kar do (pehle Claude, phir Codex).'],
+      ['📊 Is hafte ki report','Dono channels ki is hafte ki short report do: views, best video, kya sudhaarein.'],
+      ['🛠️ Problem dhoondo + fix','Tester chalao, koi problem ho to developer agent se theek karwao aur batao.']
+    ].map(([l, c]) => `<button data-cmd="${esc(c)}">${l}</button>`).join('')}</div></div></div>
     <div class="card"><div class="hd"><span class="dot"></span><h2>Live activity</h2><button class="more" data-go="system">Poori →</button></div><div class="bd feed">${feedHtml(10)}</div></div>
     <div class="card"><div class="hd"><h2>🟢 Haal hi mein live</h2><button class="more" data-go="content" data-tab="live">Sab →</button></div><div class="bd">${liveList().slice(0, 4).map(u => vRow(u, u.ch)).join('') || '<div class="empty">Abhi kuch live nahi</div>'}</div></div>
   </div></div>`;
 }
 function content(){
+  if (TAB === 'scripts') return scriptsTab();
   const list = TAB === 'scheduled' ? upcoming() : TAB === 'live' ? liveList() : making();
   const f = list.filter(x => FILT === 'all' || chKey(x.ch) === FILT);
   let body = '';
   if (TAB === 'making') body = f.map(epHtml).join('');
   else { const days = {}; f.forEach(u => { const d = (u.when_ist || 'Live').split(',')[0]; (days[d] = days[d] || []).push(u); });
     body = Object.entries(days).map(([d, us]) => `<div class="day"><h3>${esc(d)}</h3><div class="vgrid">${us.map(vCard).join('')}</div></div>`).join(''); }
-  const n = k => k === 'scheduled' ? upcoming().length : k === 'live' ? liveList().length : making().length;
-  return `<div class="tabs">${[['scheduled','📅 Scheduled'],['live','🟢 Live'],['making','🛠️ Ban raha hai']].map(([k, l]) => `<button data-tab="${k}" class="${TAB === k ? 'on' : ''}">${l} (${n(k)})</button>`).join('')}</div>
-   <div class="filter">${[['all','Sab'],['nyxav','Nyxav'],['qirvello','Qirvello']].map(([k, l]) => `<button data-f="${k}" class="${FILT === k ? 'on' : ''}">${l}</button>`).join('')}</div>
-   ${body ? (TAB === 'making' ? `<div class="card"><div class="bd">${body}</div></div>` : body) : '<div class="card"><div class="bd"><div class="empty">Kuch nahi mila</div></div></div>'}`;
+  const n = k => k === 'scheduled' ? upcoming().length : k === 'live' ? liveList().length : k === 'scripts' ? lib().length : making().length;
+  return tabsBar() + `${body ? (TAB === 'making' ? `<div class="card"><div class="bd">${body}</div></div>` : body) : '<div class="card"><div class="bd"><div class="empty">Kuch nahi mila</div></div></div>'}`;
+}
+const lib = () => D.channels.flatMap(c => (c.library || []).map(x => ({...x, ch:c.name})));
+const tabsBar = () => { const n = k => k === 'scheduled' ? upcoming().length : k === 'live' ? liveList().length : k === 'scripts' ? lib().length : making().length;
+  return `<div class="tabs">${[['scheduled','📅 Scheduled'],['live','🟢 Live'],['making','🛠️ Ban raha hai'],['scripts','📚 Scripts']].map(([k, l]) => `<button data-tab="${k}" class="${TAB === k ? 'on' : ''}">${l} (${n(k)})</button>`).join('')}</div>
+   <div class="filter">${[['all','Sab'],['nyxav','Nyxav'],['qirvello','Qirvello']].map(([k, l]) => `<button data-f="${k}" class="${FILT === k ? 'on' : ''}">${l}</button>`).join('')}</div>`; };
+function scriptsTab(){
+  const xs = lib().filter(x => FILT === 'all' || chKey(x.ch) === FILT);
+  const lab = {critic:'✍️ Critic', factcheck:'🔎 Fact-check', voice:'🎙️ Voice', visuals:'🎨 Paintings', uploaded:'📤 Upload'};
+  return tabsBar() + `<div class="vgrid">${xs.map((x, i) => `<div class="card" style="padding:14px;cursor:pointer" data-script="${esc(x.ch)}|${esc(x.id)}">
+    <div style="display:flex;gap:8px;align-items:center"><span class="ch-dot ch-${chKey(x.ch)}"></span><span class="tag ${x.kind}">${x.kind === 'short' ? 'Short' : 'Long'}</span>${x.series ? `<span class="tag">${esc(x.series)}</span>` : ''}</div>
+    <b style="display:block;margin-top:8px">${esc(x.title)}</b><div class="when">${x.lines} lines · ${x.words} words</div>
+    <div class="sc-steps">${Object.entries(lab).map(([k, l]) => { const v = x.steps.uploaded ? true : x.steps[k]; return `<span class="${v === true ? 'y' : v === false ? 'n' : ''}">${l}</span>`; }).join('')}</div></div>`).join('') || '<div class="empty">Koi script nahi</div>'}</div>`;
+}
+function openScript(ch, id){
+  const x = lib().find(y => y.ch === ch && y.id === id); if (!x) return;
+  const cmd = t => REPO + '/issues/new?labels=command&title=' + encodeURIComponent(t.slice(0, 80)) + '&body=' + encodeURIComponent(t);
+  const m = document.createElement('div'); m.className = 'modal';
+  m.innerHTML = `<div class="box"><div class="mh"><span class="ch-dot ch-${chKey(ch)}"></span><b>${esc(x.title)}</b><button class="btn" data-close style="padding:6px 10px">✕</button></div>
+    <div class="mb"><div class="when" style="margin-bottom:8px">${esc(ch)} · ${esc(x.id)} · ${x.lines} lines${x.twist ? ' · twist: ' + esc(x.twist) : ''}</div><ol>${x.preview.map(l => `<li>${esc(l)}</li>`).join('')}</ol></div>
+    <div class="mf"><a class="btn primary" target="_blank" rel="noopener" href="${cmd(`${ch} ${x.id} ki script mein ye badlaav karo: `)}">✏️ Badlaav karwao</a>
+    <a class="btn" target="_blank" rel="noopener" href="${cmd(`${ch} ${x.id} ko abhi banao aur schedule karo (agar sab ready hai)`)}">▶ Abhi banao</a>
+    <a class="btn" target="_blank" rel="noopener" href="${cmd(`${ch} ${x.id} ko roko — upload mat karna, mujhse poochna`)}">⏸ Roko</a></div></div>`;
+  m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.remove(); }); document.body.appendChild(m);
 }
 function chat(){
   const ts = D.commands || []; const t = TH >= 0 ? ts[TH] : null;
@@ -297,6 +336,7 @@ function render(){
 }
 function toast(t){ const n = document.createElement('div'); n.textContent = t; n.style.cssText = 'position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13px;z-index:9;max-width:90%'; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
 document.addEventListener('click', e => {
+  const sc = e.target.closest('[data-script]'); if (sc) { const [ch, id] = sc.dataset.script.split('|'); openScript(ch, id); return; }
   const b = e.target.closest('button'); if (!b || b.form) return;
   if (b.dataset.go) { VIEW = b.dataset.go; if (b.dataset.tab) TAB = b.dataset.tab; LIST = VIEW === 'chat' && innerWidth <= 820; render(); scrollTo(0, 0); return; }
   if (b.dataset.tab) { TAB = b.dataset.tab; render(); return; }
@@ -304,6 +344,7 @@ document.addEventListener('click', e => {
   if (b.dataset.th) { TH = +b.dataset.th; LIST = false; render(); return; }
   if (b.id === 'backth') { LIST = true; render(); return; }
   if (b.id === 'newchat') { TH = -1; LIST = false; render(); $('#ctext')?.focus(); return; }
+  if (b.dataset.cmd) { window.open(REPO + '/issues/new?labels=command&title=' + encodeURIComponent(b.dataset.cmd.slice(0, 80)) + '&body=' + encodeURIComponent(b.dataset.cmd), '_blank'); toast('GitHub pe Submit dabao — Claude 1–2 min mein kar dega'); return; }
   if (b.dataset.q) { const t = $('#ctext'); t.value = b.dataset.q; t.focus(); return; }
   if (b.id === 'csend') { const txt = $('#ctext').value.trim(); if (!txt) return; const t = TH >= 0 ? (D.commands || [])[TH] : null;
     if (t && t.status !== 'done') { navigator.clipboard?.writeText(txt).catch(() => {}); window.open(t.url + '#issue-comment-box', '_blank'); toast('Message copy ho gaya — GitHub pe paste karke Comment dabao'); }
