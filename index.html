@@ -406,7 +406,8 @@ function stageHtml(){
   if (last.from === 'wait') return `<div class="stage on"><span class="spin"></span><div><b>${/cloud/.test(last.text) ? '☁️ Cloud' : '🖥️ Mac'} ne utha liya — Claude kaam kar raha hai</b><span><i data-since="${last.at}">${ago(last.at)}</i> se · sawaal ho to ~1 min, kaam ho to kuch min</span></div></div>`;
   return `<div class="stage"><span class="spin"></span><div><b>✓ Pahunch gaya — Claude ke uthane ka intezaar</b><span><i data-since="${lastOwner.at}">${ago(lastOwner.at)}</i> se · Mac on ho to ~10 sec · band ho to cloud ~2 min</span></div></div>`;
 }
-const msgsHtml = () => CH.cur ? CH.msgs.filter(m => m.from !== 'wait').map(m => `<div class="msg ${m.from}">${esc(m.text)}<span class="at">${m.from === 'claude' ? 'Claude · ' : ''}${tIST(m.at)}${m.from === 'owner' ? ' ✓' : ''}</span></div>`).join('') + stageHtml()
+const linkify = h => h.replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;word-break:break-all">${u.length > 60 ? u.slice(0, 45) + '… (tap karo)' : u}</a>`);
+const msgsHtml = () => CH.cur ? CH.msgs.filter(m => m.from !== 'wait').map(m => `<div class="msg ${m.from}">${linkify(esc(m.text))}<span class="at">${m.from === 'claude' ? 'Claude · ' : ''}${tIST(m.at)}${m.from === 'owner' ? ' ✓' : ''}</span></div>`).join('') + stageHtml()
   : '<div class="empty">Neeche likho ya ek chip dabao — jawaab yahin aayega.</div>';
 const threadsHtml = () => CH.threads.map(t => `<button class="th ${t.number === CH.cur ? 'on' : ''}" data-thn="${t.number}"><b>${esc(t.title)}</b><span>${t.state === 'closed' ? '✅' : '💬'} ${tIST(t.updated_at)} · ${t.comments} msgs</span></button>`).join('') || '<div class="empty" style="padding:14px">Abhi koi baat nahi</div>';
 const tIST = iso => new Date(iso).toLocaleString('en-IN', {timeZone:'Asia/Kolkata', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
