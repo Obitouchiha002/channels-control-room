@@ -364,7 +364,7 @@ async function gh(path, opt = {}){
   if (!r.ok) throw new Error(r.status + ' ' + (await r.text()).slice(0, 120)); return r.status === 204 ? null : r.json();
 }
 const asMsgs = (issue, comments) => [{from:'owner', text:(issue.title + (issue.body && issue.body !== issue.title ? '\n' + issue.body : '')).trim(), at:issue.created_at}]
-  .concat(comments.map(c => ({from: c.body.startsWith('🤖') ? 'claude' : c.body.startsWith('⏳') ? 'wait' : 'owner', text: c.body.replace(/^🤖🔁?\s*/, ''), at: c.created_at, again: c.body.startsWith('🤖🔁')})));
+  .concat(comments.map(c => ({from: c.body.startsWith('🤖') ? 'claude' : c.body.startsWith('⏳') ? 'wait' : 'owner', text: c.body.replace(/^🤖(🔁)?\s*/u, ''), at: c.created_at, again: c.body.startsWith('🤖🔁')})));
 async function chatLoad(){
   if (!TOK()) return;
   try {
