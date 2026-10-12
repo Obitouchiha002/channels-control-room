@@ -137,7 +137,7 @@ async function open(pw){
   setInterval(async () => { try{ render(await decrypt(pw)) }catch(e){} }, 5 * 60 * 1000);
 }
 $('#f').onsubmit = async ev => { ev.preventDefault(); $('#err').textContent = '';
-  try{ await open($('#pw').value) }catch(e){ $('#err').textContent = 'Wrong passcode' } };
+  try{ await open($('#pw').value.trim()) }catch(e){ $('#err').textContent = 'Galat passcode — dobara try karein' } };
 try{ const pw = sessionStorage.getItem('pw'); if (pw) open(pw).catch(() => {}) }catch(e){}
 </script>
 </body>
