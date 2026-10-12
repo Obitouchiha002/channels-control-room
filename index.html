@@ -96,6 +96,30 @@ a{color:inherit}button{font:inherit;cursor:pointer;color:inherit}
 .chan{padding:16px}.chan .hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}.chan h3{margin:0;font-size:17px}
 .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.mini > a,.mini > div{background:var(--panel2);border-radius:12px;padding:10px 12px;text-decoration:none}
 .mini .n{font-size:20px;font-weight:700}.mini .l{font-size:12px;color:var(--muted)}
+
+/* media */
+.vrow{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.vrow:first-child{border-top:0}
+.th16{width:112px;aspect-ratio:16/9;border-radius:10px;object-fit:cover;background:var(--panel2);flex:none}
+.th9{width:56px;aspect-ratio:9/16;border-radius:9px;object-fit:cover;background:var(--panel2);flex:none}
+.vinfo{flex:1;min-width:0}.vinfo .t{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vinfo .m{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.lk{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;border-radius:7px;padding:2px 7px;text-decoration:none;border:1px solid var(--line)}
+.lk.yt{color:#e62117;border-color:color-mix(in srgb,#e62117 30%,transparent)}.lk.ig{color:#d62976;border-color:color-mix(in srgb,#d62976 30%,transparent)}
+.lk.fb{color:#1877f2;border-color:color-mix(in srgb,#1877f2 30%,transparent)}.lk.dr{color:#1a9e5c;border-color:color-mix(in srgb,#1a9e5c 30%,transparent)}.lk.st{color:var(--muted)}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.vcard{overflow:hidden;display:flex;flex-direction:column}.vcard .cov{position:relative;aspect-ratio:16/9;background:var(--panel2)}
+.vcard .cov img{width:100%;height:100%;object-fit:cover}.vcard .cov.short{aspect-ratio:4/5}
+.vcard .cov .badge{position:absolute;top:8px;left:8px}.vcard .cov .chl{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:2px solid #fff;object-fit:cover}
+.vcard .vb{padding:10px 12px 12px}.vcard .vb b{font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.kpi{position:relative;overflow:hidden}.kpi::after{content:"";position:absolute;inset:auto -20px -30px auto;width:90px;height:90px;border-radius:50%;background:var(--kc,var(--accent));opacity:.12}
+.kpi .n{color:var(--kc,var(--ink))}
+.chlogo{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none;border:2px solid var(--line)}
+.aig{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.aic{padding:16px}.aic .h{display:flex;align-items:center;gap:10px}.aic .h b{font-size:15px}.aic .who{font-size:12px;color:var(--muted)}
+.st-b{margin-left:auto;font-size:11px;font-weight:700;border-radius:99px;padding:3px 9px}
+.st-b.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}.st-b.limited{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}.st-b.down{color:var(--bad);background:color-mix(in srgb,var(--bad) 13%,transparent)}
+.aic ul{margin:10px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}.aic .d{font-size:13px;margin-top:8px}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}.flow span{background:var(--panel2);border-radius:9px;padding:5px 10px}
 .chatwrap{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 110px);min-height:520px;overflow:hidden}
 .threads{border-right:1px solid var(--line);overflow:auto}
 .threads .newb{margin:12px;width:calc(100% - 24px);justify-content:center}
@@ -120,6 +144,7 @@ a{color:inherit}button{font:inherit;cursor:pointer;color:inherit}
 .mbar,.tabbar{display:none}
 @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.grid2{grid-template-columns:1fr!important}}
 @media (max-width:820px){
+  .th16{width:96px}.vgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tabbar{grid-template-columns:repeat(6,1fr)!important}
   .app{grid-template-columns:1fr}.side{display:none}
   .main{padding:14px 14px calc(84px + env(safe-area-inset-bottom))}
   .mbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));border-bottom:1px solid var(--line)}
@@ -172,14 +197,21 @@ const STEPS = ['research','script','factcheck','plan','visuals','voice','render'
 function kpis(){
   const soc = k => sum(c => (c.social || {})[k]?.followers);
   return `<div class="kpis">
-   <div class="card kpi"><div class="n">${sum(c => c.counts?.live)}</div><div class="l">🟢 Live videos</div></div>
-   <div class="card kpi"><div class="n">${sum(c => c.counts?.scheduled)}</div><div class="l">📅 Scheduled</div></div>
-   <div class="card kpi"><div class="n">${sum(c => c.counts?.making)}</div><div class="l">🛠️ Ban rahe hain</div></div>
-   <div class="card kpi"><div class="n">${sum(c => c.stats?.subscriberCount)}</div><div class="l">YouTube subscribers</div></div>
-   <div class="card kpi"><div class="n">${sum(c => c.stats?.viewCount)}</div><div class="l">YouTube views</div></div>
-   <div class="card kpi"><div class="n">${soc('instagram')}<small> / ${soc('facebook')}</small></div><div class="l">Instagram / Facebook</div></div></div>`;
+   <div class="card kpi" style="--kc:var(--ok)"><div class="n">${sum(c => c.counts?.live)}</div><div class="l">🟢 Live videos</div></div>
+   <div class="card kpi" style="--kc:var(--accent)"><div class="n">${sum(c => c.counts?.scheduled)}</div><div class="l">📅 Scheduled</div></div>
+   <div class="card kpi" style="--kc:var(--warn)"><div class="n">${sum(c => c.counts?.making)}</div><div class="l">🛠️ Ban rahe hain</div></div>
+   <div class="card kpi" style="--kc:#e62117"><div class="n">${sum(c => c.stats?.subscriberCount)}</div><div class="l">YouTube subscribers</div></div>
+   <div class="card kpi" style="--kc:#ff5a3c"><div class="n">${sum(c => c.stats?.viewCount)}</div><div class="l">YouTube views</div></div>
+   <div class="card kpi" style="--kc:#d62976"><div class="n">${soc('instagram')}<small> / ${soc('facebook')}</small></div><div class="l">Instagram / Facebook</div></div></div>`;
 }
-const vRow = (u, c) => `<div class="row"><span class="ch-dot ch-${chKey(c)}" title="${esc(c)}"></span><span class="tag ${u.kind}">${u.kind === 'short' ? 'Short' : 'Long'}</span>
+const chObj = n => D.channels.find(c => c.name === n) || {};
+const links = (u, c) => `${u.id ? `<a class="lk yt" href="https://youtu.be/${esc(u.id)}" target="_blank" rel="noopener">▶ YouTube</a><a class="lk st" href="https://studio.youtube.com/video/${esc(u.id)}/edit" target="_blank" rel="noopener">Studio</a>` : ''}${(u.links || {}).instagram ? `<a class="lk ig" href="${esc(u.links.instagram)}" target="_blank" rel="noopener">Instagram</a>` : ''}${(u.links || {}).facebook ? `<a class="lk fb" href="${esc(u.links.facebook)}" target="_blank" rel="noopener">Facebook</a>` : ''}${(u.links || {}).drive ? `<a class="lk dr" href="${esc(u.links.drive)}" target="_blank" rel="noopener">Drive</a>` : ''}`;
+const img = (src, cls) => src ? `<img class="${cls}" src="${esc(src)}" loading="lazy" alt="" onerror="this.style.visibility='hidden'">` : `<div class="${cls}"></div>`;
+const vRow = (u, c) => `<div class="vrow">${img(u.thumb, u.kind === 'short' ? 'th9' : 'th16')}<div class="vinfo"><span class="t">${esc(u.title)}</span>
+  <div class="m"><span class="ch-dot ch-${chKey(c)}"></span><span class="tag ${u.kind}">${u.kind === 'short' ? 'Short' : 'Long'}</span><span class="when">${esc(u.when_ist)}</span>${links(u, c)}</div></div></div>`;
+const vCard = u => { const c = chObj(u.ch); return `<div class="card vcard"><div class="cov ${u.kind}">${img(u.thumb, '')}<span class="tag ${u.kind} badge">${u.kind === 'short' ? 'Short' : 'Long'}</span>${c.logo ? `<img class="chl" src="${esc(c.logo)}" alt="">` : ''}</div>
+  <div class="vb"><b>${esc(u.title)}</b><div class="when" style="margin:4px 0 6px">${esc(u.when_ist)}</div><div class="m" style="display:flex;gap:5px;flex-wrap:wrap">${links(u, u.ch)}</div></div></div>`; };
+const vRowOld = (u, c) => `<div class="row"><span class="ch-dot ch-${chKey(c)}" title="${esc(c)}"></span><span class="tag ${u.kind}">${u.kind === 'short' ? 'Short' : 'Long'}</span>
   <span class="t">${u.id ? `<a href="https://studio.youtube.com/video/${esc(u.id)}/edit" target="_blank" rel="noopener">${esc(u.title)}</a>` : esc(u.title)}</span><span class="when">${esc(u.when_ist)}</span></div>`;
 const upcoming = () => D.channels.flatMap(c => c.upcoming.map(u => ({...u, ch:c.name}))).sort((a, b) => a.when < b.when ? -1 : 1);
 const liveList = () => D.channels.flatMap(c => (c.live || []).map(u => ({...u, ch:c.name}))).sort((a, b) => (a.when || '') < (b.when || '') ? 1 : -1);
@@ -187,8 +219,8 @@ const making = () => D.channels.flatMap(c => c.episodes.map(e => ({...e, ch:c.na
 const feedHtml = n => (D.activity || []).slice(0, n).map(f => `<div class="it"><div class="ic ${f.kind}">${f.kind === 'error' ? '⚠️' : f.kind === 'job' ? '⚙️' : '✨'}</div>
   <div class="tx"><div>${esc(f.text)}</div><span class="when">${esc(f.ch)} · ${esc(f.at_h)}</span></div></div>`).join('') || '<div class="empty">Abhi koi activity nahi</div>';
 const epHtml = e => { const i = Math.max(0, STEPS.indexOf(e.stage));
-  return `<div class="ep"><div class="row" style="padding:0;border:0"><span class="ch-dot ch-${chKey(e.ch)}"></span><span class="tag ${e.kind}">${e.kind === 'short' ? 'Short' : 'Long'}</span><span class="t">${esc(e.title)}</span><span class="when">${esc(e.stage)}</span></div>
-  ${e.kind === 'long' ? `<div class="steps">${STEPS.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div>` : ''}${e.note ? `<div class="meta">${esc(e.note)}</div>` : ''}</div>`; };
+  return `<div class="ep" style="display:flex;gap:12px">${e.thumb ? img(e.thumb, e.kind === 'short' ? 'th9' : 'th16') : ''}<div style="flex:1;min-width:0"><div class="row" style="padding:0;border:0"><span class="ch-dot ch-${chKey(e.ch)}"></span><span class="tag ${e.kind}">${e.kind === 'short' ? 'Short' : 'Long'}</span><span class="t">${esc(e.title)}</span><span class="when">${esc(e.stage)}</span></div>
+  ${e.kind === 'long' ? `<div class="steps">${STEPS.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div>` : ''}${e.note ? `<div class="meta">${esc(e.note)}</div>` : ''}</div></div>`; };
 
 function home(){
   const al = allAlerts();
@@ -208,7 +240,7 @@ function content(){
   let body = '';
   if (TAB === 'making') body = f.map(epHtml).join('');
   else { const days = {}; f.forEach(u => { const d = (u.when_ist || 'Live').split(',')[0]; (days[d] = days[d] || []).push(u); });
-    body = Object.entries(days).map(([d, us]) => `<div class="day"><h3>${esc(d)}</h3><div class="card"><div class="bd">${us.map(u => vRow(u, u.ch)).join('')}</div></div></div>`).join(''); }
+    body = Object.entries(days).map(([d, us]) => `<div class="day"><h3>${esc(d)}</h3><div class="vgrid">${us.map(vCard).join('')}</div></div>`).join(''); }
   const n = k => k === 'scheduled' ? upcoming().length : k === 'live' ? liveList().length : making().length;
   return `<div class="tabs">${[['scheduled','📅 Scheduled'],['live','🟢 Live'],['making','🛠️ Ban raha hai']].map(([k, l]) => `<button data-tab="${k}" class="${TAB === k ? 'on' : ''}">${l} (${n(k)})</button>`).join('')}</div>
    <div class="filter">${[['all','Sab'],['nyxav','Nyxav'],['qirvello','Qirvello']].map(([k, l]) => `<button data-f="${k}" class="${FILT === k ? 'on' : ''}">${l}</button>`).join('')}</div>
@@ -228,10 +260,20 @@ function chat(){
 }
 function channels(){
   return `<div class="grid2" style="grid-template-columns:1fr 1fr">${D.channels.map(c => { const st = c.stats || {}, so = c.social || {};
-    return `<div class="card chan"><div class="hdr"><span class="ch-dot ch-${chKey(c.name)}" style="width:12px;height:12px"></span><h3>${esc(c.name)}</h3><span class="when" style="margin-left:auto">${c.alerts.length ? `⚠️ ${c.alerts.length}` : '● healthy'}</span></div>
+    return `<div class="card chan"><div class="hdr">${c.logo ? `<img class="chlogo" src="${esc(c.logo)}" alt="">` : ''}<h3>${esc(c.name)}</h3>${c.drive ? `<a class="lk dr" href="${esc(c.drive)}" target="_blank" rel="noopener">Drive archive</a>` : ''}<span class="when" style="margin-left:auto">${c.alerts.length ? `⚠️ ${c.alerts.length}` : '● healthy'}</span></div>
       <div class="mini"><div><div class="n">${st.subscriberCount ?? '–'}</div><div class="l">Subscribers</div></div><div><div class="n">${st.viewCount ?? '–'}</div><div class="l">Views</div></div><div><div class="n">${st.videoCount ?? '–'}</div><div class="l">Videos</div></div></div>
       ${Object.keys(so).length ? `<div class="mini" style="margin-top:8px;grid-template-columns:repeat(2,1fr)">${Object.entries(so).map(([k, v]) => `<a href="${esc(v.url)}" target="_blank" rel="noopener"><div class="n">${v.followers ?? '–'}</div><div class="l">${k === 'instagram' ? '📸 Instagram' : '📘 Facebook'} · ${esc(v.handle)}</div></a>`).join('')}</div>` : ''}
       <div class="mini" style="margin-top:8px"><div><div class="n">${c.counts?.live ?? 0}</div><div class="l">🟢 Live</div></div><div><div class="n">${c.counts?.scheduled ?? 0}</div><div class="l">📅 Scheduled</div></div><div><div class="n">${c.counts?.making ?? 0}</div><div class="l">🛠️ Ban rahe</div></div></div></div>`; }).join('')}</div>`;
+}
+function ai(){
+  const S = {ok:'✅ Chal raha', limited:'⏳ Limit lagi', down:'❌ Band'};
+  return `<div class="card" style="padding:16px;margin-bottom:16px"><h2 style="margin:0 0 10px;font-size:14px">Agar koi AI ruk jaaye to kaam kaun sambhaalta hai</h2>
+   <div class="flow"><b>Likhna/sochna:</b><span>Claude</span>→<span>Codex (ChatGPT)</span>→<span>agla run</span></div>
+   <div class="flow" style="margin-top:8px"><b>Awaaz:</b><span>Gemini voice</span>→<span>IndicF5 / Parler (Mac)</span></div>
+   <div class="flow" style="margin-top:8px"><b>Paintings:</b><span>Cloudflare</span>→<span>AI Horde</span>→<span>HF FLUX</span></div>
+   <div class="flow" style="margin-top:8px"><b>Doosri raay:</b><span>Codex</span>+<span>Antigravity</span></div></div>
+   <div class="aig">${(D.ai || []).map(a => `<div class="card aic"><div class="h"><b>${esc(a.name)}</b><span class="st-b ${a.status}">${S[a.status] || a.status}</span></div><div class="who">${esc(a.who)}</div>
+   <div class="d">${esc(a.detail)}</div><ul>${a.does.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}</div>`;
 }
 function system(){
   const r = D.runner || {};
@@ -240,16 +282,17 @@ function system(){
    ${D.channels.map(c => `<div class="card"><div class="hd"><span class="ch-dot ch-${chKey(c.name)}"></span><h2>${esc(c.name)} — automatic jobs</h2></div><div class="bd" style="padding-top:12px"><div class="jobs">${c.jobs.map(j => `<div class="job"><b>${esc(j.job)}</b><span class="${jobCls(j.status)}">${esc(j.status)}</span><div class="when">${esc(j.last || '')}</div></div>`).join('')}</div></div></div>`).join('')}
    <div class="card"><div class="hd"><span class="dot"></span><h2>Poori activity</h2></div><div class="bd feed">${feedHtml(40)}</div></div></div>`;
 }
-const VIEWS = {home:['Overview','home'], content:['Content','film'], chat:['Chat','chat'], channels:['Channels','grid'], system:['System','cpu']};
+I.ai = '<path d="M12 3l2.2 5.3L20 9l-4.4 3.8L17 18l-5-3-5 3 1.4-5.2L4 9l5.8-.7z"/>';
+const VIEWS = {home:['Overview','home'], content:['Content','film'], chat:['Chat','chat'], ai:['AI','ai'], channels:['Channels','grid'], system:['System','cpu']};
 function render(){
   const al = allAlerts().length, title = VIEWS[VIEW][0];
-  const nav = cls => Object.entries(VIEWS).map(([k, [l, ic]]) => `<button class="${cls} ${VIEW === k ? 'on' : ''}" data-go="${k}">${icon(ic)}<span>${l}</span>${k === 'system' && al ? `<span class="cnt">${al}</span>` : ''}</button>`).join('');
+  const nav = cls => Object.entries(VIEWS).map(([k, [l, ic]]) => `<button class="${cls} ${VIEW === k ? 'on' : ''}" data-go="${k}">${icon(ic)}<span>${l}</span>${k === 'system' && al ? `<span class="cnt">${al}</span>` : ''}${k === 'ai' && (D.ai || []).some(a => a.status !== 'ok') ? `<span class="cnt" style="background:var(--warn)">${(D.ai || []).filter(a => a.status !== 'ok').length}</span>` : ''}</button>`).join('');
   $('#app').innerHTML = `<div class="app"><aside class="side"><div class="logo"><div class="brandmark">CR</div><div><b>Control Room</b><span>2 YouTube · IG · FB</span></div></div>${nav('nav')}
       <div class="foot">Updated ${esc(D.generated)}</div></aside>
     <div style="min-width:0"><div class="mbar"><div class="brandmark">CR</div><b>${title}</b><div class="right"><button class="btn" data-act="refresh" style="padding:6px 8px">${icon('refresh', 18)}</button><button class="btn" data-act="theme" style="padding:6px 8px">${icon('sun', 18)}</button></div></div>
     <main class="main"><div class="top"><div><h1>${title}</h1><div class="sub">Updated ${esc(D.generated)} · har 10 min</div></div><div class="right"><span class="pill"><span class="dot"></span>Live</span>
       <button class="btn" data-act="refresh">${icon('refresh', 16)} Refresh</button><button class="btn" data-act="theme">${icon('sun', 16)}</button></div></div>
-    ${({home, content, chat, channels, system})[VIEW]()}</main></div></div><nav class="tabbar">${nav('')}</nav>`;
+    ${({home, content, chat, ai, channels, system})[VIEW]()}</main></div></div><nav class="tabbar">${nav('')}</nav>`;
   const m = $('#msgs'); if (m) m.scrollTop = m.scrollHeight;
 }
 function toast(t){ const n = document.createElement('div'); n.textContent = t; n.style.cssText = 'position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13px;z-index:9;max-width:90%'; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
