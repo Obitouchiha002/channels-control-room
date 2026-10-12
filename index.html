@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Channels Control Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f2;--panel:#ffffff;--panel2:#f0eee9;--ink:#1c1a17;--muted:#6f6a61;--line:#e3dfd7;
+  --ok:#1f8a4c;--warn:#b7791f;--bad:#c2410c;--accent:#7c5cff;--gold:#b8892b;
+  --nyxav:#f2b705;--qirvello:#b8892b;--shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f0e0c;--panel:#181614;--panel2:#211e1b;--ink:#f3efe7;--muted:#a39d92;--line:#2c2925;
+  --ok:#4ade80;--warn:#fbbf24;--bad:#fb7a4a;--accent:#a78bfa;--gold:#e0b45c;--nyxav:#ffd23f;--qirvello:#e0b45c;--shadow:none}}
+:root[data-theme="dark"]{--bg:#0f0e0c;--panel:#181614;--panel2:#211e1b;--ink:#f3efe7;--muted:#a39d92;--line:#2c2925;
+  --ok:#4ade80;--warn:#fbbf24;--bad:#fb7a4a;--accent:#a78bfa;--gold:#e0b45c;--nyxav:#ffd23f;--qirvello:#e0b45c;--shadow:none}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,"Noto Sans Devanagari",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;margin-bottom:18px}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:13px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 12px;font-size:13px;display:flex;gap:6px;align-items:center}
+.chip b{font-weight:600}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px}
+button.primary{background:var(--accent);border-color:transparent;color:#fff}
+button[disabled]{opacity:.55;cursor:not-allowed}
+.alerts{border:1px solid color-mix(in srgb,var(--bad) 40%,transparent);background:color-mix(in srgb,var(--bad) 9%,var(--panel));border-radius:14px;padding:12px 16px;margin-bottom:18px}
+.alerts h2{font-size:14px;margin:0 0 6px;color:var(--bad)}
+.alerts ul{margin:0;padding-left:18px}.alerts li{font-size:14px}
+.ok-banner{border:1px solid color-mix(in srgb,var(--ok) 40%,transparent);background:color-mix(in srgb,var(--ok) 9%,var(--panel));border-radius:14px;padding:10px 16px;margin-bottom:18px;color:var(--ok);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.ch{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.ch-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.dot{width:12px;height:12px;border-radius:50%}
+.ch-head h2{margin:0;font-size:18px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 18px}
+.tile{background:var(--panel2);border-radius:12px;padding:10px 12px}
+.tile .n{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.tile .l{font-size:12px;color:var(--muted)}
+section{padding:6px 18px 16px}
+section h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:10px 0 8px}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.tag{font-size:11px;font-weight:600;border-radius:6px;padding:2px 7px;background:var(--panel2);color:var(--muted);white-space:nowrap}
+.tag.short{color:var(--accent)}.tag.long{color:var(--gold)}
+.t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.when{font-size:12px;color:var(--muted);white-space:nowrap}
+.bar{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.ep{padding:10px 0;border-top:1px solid var(--line)}.ep:first-of-type{border-top:0}
+.ep .top{display:flex;gap:8px;align-items:center}
+.ep .meta{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.job{background:var(--panel2);border-radius:10px;padding:8px 10px;font-size:13px}
+.job .s{font-size:12px}.s.ok{color:var(--ok)}.s.bad{color:var(--bad)}.s.idle{color:var(--muted)}.s.run{color:var(--warn)}
+.empty{color:var(--muted);font-size:13px;padding:6px 0}
+a{color:inherit}
+#gate{min-height:100vh;display:grid;place-items:center;padding:16px}
+#gate form{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;width:min(360px,100%);box-shadow:var(--shadow)}
+#gate h1{margin-bottom:6px}
+#gate input{width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);margin:14px 0 10px}
+#err{color:var(--bad);font-size:13px;min-height:18px}
+.switch{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div id="gate"><form id="f">
+  <h1>Control Room</h1><div class="sub">Nyxav Media · Qirvello</div>
+  <input id="pw" type="password" placeholder="Passcode" autocomplete="current-password" autofocus>
+  <button class="primary" style="width:100%">Open</button><div id="err"></div>
+</form></div>
+<div id="app" class="wrap" hidden></div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function decrypt(pw){
+  const e = await (await fetch('status.enc.json?' + Date.now(), {cache:'no-store'})).json();
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt:b64(e.salt), iterations:200000, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM', iv:b64(e.iv)}, key, b64(e.ct))));
+}
+const jobClass = s => s === 'ok' ? 'ok' : s.startsWith('failed') ? 'bad' : s === 'running' ? 'run' : 'idle';
+function channel(c){
+  const st = c.stats || {};
+  return `<div class="ch"><div class="ch-head"><span class="dot" style="background:var(--${c.key})"></span><h2>${esc(c.name)}</h2>
+   <span class="sub" style="margin-left:auto">${c.alerts.length ? `<span style="color:var(--bad)">⚠ ${c.alerts.length} alert${c.alerts.length>1?'s':''}</span>` : '<span style="color:var(--ok)">● healthy</span>'}</span></div>
+   <div class="tiles"><div class="tile"><div class="n">${st.subscriberCount ?? '–'}</div><div class="l">Subscribers</div></div>
+   <div class="tile"><div class="n">${st.viewCount ?? '–'}</div><div class="l">Total views</div></div>
+   <div class="tile"><div class="n">${st.videoCount ?? '–'}</div><div class="l">Videos</div></div></div>
+   <section><h3>Up next on YouTube</h3>${c.upcoming.length ? c.upcoming.map(u => `<div class="row"><span class="tag ${u.kind}">${u.kind === 'short' ? 'Short' : 'Long'}</span>
+     <span class="t">${u.id ? `<a href="https://studio.youtube.com/video/${esc(u.id)}/edit" target="_blank" rel="noopener">${esc(u.title)}</a>` : esc(u.title)}</span><span class="when">${esc(u.when_ist)}</span></div>`).join('') : '<div class="empty">Nothing scheduled yet</div>'}</section>
+   <section><h3>In the workshop</h3>${c.episodes.length ? c.episodes.map(e => `<div class="ep"><div class="top"><span class="tag ${e.kind}">${e.kind === 'short' ? 'Short' : 'Long'}</span>
+     <span class="t">${esc(e.title)}</span><span class="when">${esc(e.stage)}</span></div>${e.kind === 'long' ? `<div class="bar"><i style="width:${e.progress}%"></i></div>` : ''}
+     ${e.note ? `<div class="meta">${esc(e.updated)} · ${esc(e.note)}</div>` : ''}</div>`).join('') : '<div class="empty">Workshop empty</div>'}</section>
+   <section><h3>Automatic jobs</h3><div class="jobs">${c.jobs.map(j => `<div class="job"><b>${esc(j.job)}</b><div class="s ${jobClass(j.status)}">${esc(j.status)}</div><div class="when">${esc(j.last)}</div></div>`).join('')}</div></section></div>`;
+}
+function render(d){
+  const alerts = d.channels.flatMap(c => c.alerts.map(a => `<li><b>${esc(c.name)}:</b> ${esc(a)}</li>`));
+  const r = d.runner || {};
+  $('#app').innerHTML = `<header><div><h1>Channels Control Room</h1><div class="sub">Updated ${esc(d.generated)} · refreshes every 30 min</div></div>
+    <div class="switch"><span class="chip">Runs on <b>${esc(r.runner || 'mac')}</b></span><span class="chip">AI <b>${esc(r.brain || 'claude')}</b></span>
+    <button disabled title="Cloud runner not built yet — see runner.json">Switch to cloud</button>
+    <button id="theme" aria-label="Toggle theme">◐</button></div></header>
+    ${alerts.length ? `<div class="alerts"><h2>Needs attention</h2><ul>${alerts.join('')}</ul></div>` : '<div class="ok-banner">✓ Everything is running fine</div>'}
+    <div class="grid">${d.channels.map(channel).join('')}</div>
+    <footer>Private dashboard · data encrypted with your passcode</footer>`;
+  $('#theme').onclick = () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; try{localStorage.setItem('theme', t)}catch(e){} };
+}
+try{ const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t }catch(e){}
+async function open(pw){
+  const d = await decrypt(pw);
+  try{ sessionStorage.setItem('pw', pw) }catch(e){}
+  $('#gate').hidden = true; $('#app').hidden = false; render(d);
+  setInterval(async () => { try{ render(await decrypt(pw)) }catch(e){} }, 5 * 60 * 1000);
+}
+$('#f').onsubmit = async ev => { ev.preventDefault(); $('#err').textContent = '';
+  try{ await open($('#pw').value) }catch(e){ $('#err').textContent = 'Wrong passcode' } };
+try{ const pw = sessionStorage.getItem('pw'); if (pw) open(pw).catch(() => {}) }catch(e){}
+</script>
+</body>
+</html>
