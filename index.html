@@ -169,6 +169,7 @@ a{color:inherit}button{font:inherit;cursor:pointer;color:inherit}
   .chatwrap{grid-template-columns:1fr;height:calc(100vh - 160px)}.threads{display:none}.chatwrap.list .threads{display:block}.chatwrap.list .conv{display:none}
   .backth{display:inline-flex}.msg{max-width:88%}
 }
+.feed .it.new{background:color-mix(in srgb,var(--accent,#ff5a3c) 8%,transparent);border-radius:10px}.tabs.plat{margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -192,7 +193,7 @@ const I = {
   sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   refresh:'<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>', send:'<path d="M4 12l16-8-6 16-2-7z"/>', back:'<path d="M15 5l-7 7 7 7"/>'};
 const icon = (n, w) => `<svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${w ? `style="width:${w}px;height:${w}px"` : ''}>${I[n]}</svg>`;
-let D = null, VIEW = 'home', TAB = 'scheduled', FILT = 'all', TH = 0, PW = '', LIST = false;
+let D = null, VIEW = 'home', TAB = 'scheduled', FILT = 'all', PLAT = 'youtube', NF = 'all', TH = 0, PW = '', LIST = false;
 
 async function decrypt(pw){
   const e = await (await fetch('status.enc.json?' + Date.now(), {cache:'no-store'})).json();
@@ -219,9 +220,9 @@ function kpis(){
 const chObj = n => D.channels.find(c => c.name === n) || {};
 const links = (u, c) => `${u.id ? `<a class="lk yt" href="https://youtu.be/${esc(u.id)}" target="_blank" rel="noopener">▶ YouTube</a><a class="lk st" href="https://studio.youtube.com/video/${esc(u.id)}/edit" target="_blank" rel="noopener">Studio</a>` : ''}${(u.links || {}).instagram ? `<a class="lk ig" href="${esc(u.links.instagram)}" target="_blank" rel="noopener">Instagram</a>` : ''}${(u.links || {}).facebook ? `<a class="lk fb" href="${esc(u.links.facebook)}" target="_blank" rel="noopener">Facebook</a>` : ''}${(u.links || {}).drive ? `<a class="lk dr" href="${esc(u.links.drive)}" target="_blank" rel="noopener">Drive</a>` : ''}`;
 const img = (src, cls) => src ? `<img class="${cls}" src="${esc(src)}" loading="lazy" alt="" onerror="this.style.visibility='hidden'">` : `<div class="${cls}"></div>`;
-const vRow = (u, c) => `<div class="vrow">${img(u.thumb, u.kind === 'short' ? 'th9' : 'th16')}<div class="vinfo"><span class="t">${esc(u.title)}</span>
+const vRow = (u, c) => `<div class="vrow" data-det="${esc(c)}|${esc(u.ep || '')}|${esc(u.id || '')}" style="cursor:pointer">${img(u.thumb, u.kind === 'short' ? 'th9' : 'th16')}<div class="vinfo"><span class="t">${esc(u.title)}</span>
   <div class="m"><span class="ch-dot ch-${chKey(c)}"></span><span class="tag ${u.kind}">${u.kind === 'short' ? 'Short' : 'Long'}</span><span class="when">${esc(u.when_ist)}${u.took ? ` · ⏱ ${esc(u.took)}` : ''}</span>${links(u, c)}</div></div></div>`;
-const vCard = u => { const c = chObj(u.ch); return `<div class="card vcard"><div class="cov ${u.kind}">${img(u.thumb, '')}<span class="tag ${u.kind} badge">${u.kind === 'short' ? 'Short' : 'Long'}</span>${c.logo ? `<img class="chl" src="${esc(c.logo)}" alt="">` : ''}</div>
+const vCard = u => { const c = chObj(u.ch); return `<div class="card vcard" data-det="${esc(u.ch)}|${esc(u.ep || '')}|${esc(u.id || '')}" style="cursor:pointer"><div class="cov ${u.kind}">${img(u.thumb, '')}<span class="tag ${u.kind} badge">${u.kind === 'short' ? 'Short' : 'Long'}</span>${c.logo ? `<img class="chl" src="${esc(c.logo)}" alt="">` : ''}</div>
   <div class="vb"><b>${esc(u.title)}</b><div class="when" style="margin:4px 0 6px">${esc(u.when_ist)}${u.took ? ` · ⏱ ${esc(u.took)} mein bana` : ''}</div><div class="m" style="display:flex;gap:5px;flex-wrap:wrap">${links(u, u.ch)}</div></div></div>`; };
 const vRowOld = (u, c) => `<div class="row"><span class="ch-dot ch-${chKey(c)}" title="${esc(c)}"></span><span class="tag ${u.kind}">${u.kind === 'short' ? 'Short' : 'Long'}</span>
   <span class="t">${u.id ? `<a href="https://studio.youtube.com/video/${esc(u.id)}/edit" target="_blank" rel="noopener">${esc(u.title)}</a>` : esc(u.title)}</span><span class="when">${esc(u.when_ist)}</span></div>`;
@@ -256,6 +257,7 @@ function home(){
 }
 function content(){
   if (TAB === 'scripts') return scriptsTab();
+  if (PLAT !== 'youtube') return platTab();
   const list = TAB === 'scheduled' ? upcoming() : TAB === 'live' ? liveList() : making();
   const f = list.filter(x => FILT === 'all' || chKey(x.ch) === FILT);
   let body = '';
@@ -267,8 +269,69 @@ function content(){
 }
 const lib = () => D.channels.flatMap(c => (c.library || []).map(x => ({...x, ch:c.name})));
 const tabsBar = () => { const n = k => k === 'scheduled' ? upcoming().length : k === 'live' ? liveList().length : k === 'scripts' ? lib().length : making().length;
-  return `<div class="tabs">${[['scheduled','📅 Scheduled'],['live','🟢 Live'],['making','🛠️ Ban raha hai'],['scripts','📚 Scripts']].map(([k, l]) => `<button data-tab="${k}" class="${TAB === k ? 'on' : ''}">${l} (${n(k)})</button>`).join('')}</div>
-   <div class="filter">${[['all','Sab'],['nyxav','Nyxav'],['qirvello','Qirvello']].map(([k, l]) => `<button data-f="${k}" class="${FILT === k ? 'on' : ''}">${l}</button>`).join('')}</div>`; };
+  return platBar() + (PLAT !== 'youtube' ? '' : `<div class="tabs">${[['scheduled','📅 Scheduled'],['live','🟢 Live'],['making','🛠️ Ban raha hai'],['scripts','📚 Scripts']].map(([k, l]) => `<button data-tab="${k}" class="${TAB === k ? 'on' : ''}">${l} (${n(k)})</button>`).join('')}</div>
+   <div class="filter">${[['all','Sab'],['nyxav','Nyxav'],['qirvello','Qirvello']].map(([k, l]) => `<button data-f="${k}" class="${FILT === k ? 'on' : ''}">${l}</button>`).join('')}</div>`); };
+const platBar = () => `<div class="tabs plat">${[['youtube','▶ YouTube'],['instagram','📸 Instagram'],['facebook','📘 Facebook']].map(([k, l]) => `<button data-plat="${k}" class="${PLAT === k ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+const allItems = () => upcoming().concat(liveList());
+function platTab(){
+  const xs = allItems().filter(u => (u.links || {})[PLAT]).sort((a, b) => ((b.posted || {})[PLAT] || '') < ((a.posted || {})[PLAT] || '') ? -1 : 1);
+  const acc = D.channels.map(c => (c.social || {})[PLAT] ? `<a class="card" style="padding:12px 14px;display:flex;gap:10px;align-items:center" href="${esc(c.social[PLAT].url)}" target="_blank" rel="noopener">${c.logo ? `<img src="${esc(c.logo)}" style="width:36px;height:36px;border-radius:50%">` : ''}<div><b>${esc(c.social[PLAT].handle)}</b><div class="when">${c.social[PLAT].followers ?? 0} followers${c.social[PLAT].posts != null ? ' · ' + c.social[PLAT].posts + ' posts' : ''}</div></div></a>` : '').join('');
+  return platBar() + `<div class="vgrid" style="margin-bottom:14px">${acc || '<div class="card"><div class="bd"><div class="empty">Account abhi juda nahi</div></div></div>'}</div>
+    <div class="day"><h3>${PLAT === 'instagram' ? 'Reels' : 'Page Reels'} (${xs.length})</h3><div class="vgrid">${xs.map(u => vCard({...u, when_ist: '📤 ' + ((u.posted || {})[PLAT] || '')})).join('') || '<div class="empty">Abhi kuch post nahi hua</div>'}</div></div>`;
+}
+function detail(ch, ep, id){
+  const u = allItems().find(x => x.ch === ch && (id ? x.id === id : x.ep === ep)); if (!u) return;
+  const live = u.when && new Date(u.when) <= new Date(), p = u.posted || {}, L = u.links || {};
+  const row = (k, v) => v ? `<div class="row"><span class="t">${k}</span><span class="when">${esc(v)}</span></div>` : '';
+  const m = document.createElement('div'); m.className = 'modal';
+  m.innerHTML = `<div class="box"><div class="mh"><span class="ch-dot ch-${chKey(ch)}"></span><b>${esc(u.title)}</b><button class="btn" data-close style="padding:6px 10px">✕</button></div>
+    <div class="mb"><div style="display:flex;gap:14px;flex-wrap:wrap">${img(u.thumb, u.kind === 'short' ? 'th9' : 'th16')}<div style="flex:1;min-width:220px">
+    ${row('Channel', ch)}${row('Type', u.kind === 'short' ? 'Short / Reel' : 'Long video')}
+    ${row('▶ YouTube', (live ? '🟢 Live — ' : '📅 Scheduled — ') + (u.when_ist || ''))}${row('📸 Instagram', p.instagram ? '✅ ' + p.instagram : (L.instagram ? '✅' : '—  abhi nahi'))}
+    ${row('📘 Facebook', p.facebook ? '✅ ' + p.facebook : (L.facebook ? '✅' : '—  abhi nahi'))}${row('⏱ Banne mein', u.took)}${row('Folder', u.ep)}</div></div></div>
+    <div class="mf">${links(u, ch)}</div></div>`;
+  m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.remove(); }); document.body.appendChild(m);
+}
+// ---- send a task/setting to Claude from anywhere (in-app chat when connected)
+async function sendCmd(t, quiet){
+  if (!TOK()) { window.open(REPO + '/issues/new?labels=command&title=' + encodeURIComponent(t.slice(0, 80)) + '&body=' + encodeURIComponent(t), '_blank'); return; }
+  if (quiet) { try { await gh('/issues', {method:'POST', body: JSON.stringify({title: t.slice(0, 80), body: t, labels: ['command']})}); toast('Bhej diya ✓ — 1 min mein lagu'); CH.threads = null; } catch (e) { toast('Nahi gaya: ' + String(e).slice(0, 60)); } return; }
+  VIEW = 'chat'; CH.cur = null; CH.msgs = []; LIST = false; render(); $('#ctext').value = t; chatPoll(true);
+  if (t.endsWith(': ')) $('#ctext').focus(); else chatSend();  // "…ye badlaav karo: " waits for the owner to finish typing
+}
+// ---- 🔔 in-app notifications
+const seenAt = () => { try { return localStorage.getItem('nf_seen') || '' } catch (e) { return '' } };
+const unread = () => (D.inbox || []).filter(n => n.at > seenAt()).length;
+function inbox(){
+  const xs = (D.inbox || []).filter(n => NF === 'all' || n.kind === NF), seen = seenAt();
+  setTimeout(() => { try { localStorage.setItem('nf_seen', (D.inbox || [])[0]?.at || '') } catch (e) {} }, 1500);
+  const ic = {bad:'⚠️', up:'📤', info:'✨'};
+  return `<div class="filter">${[['all','Sab'],['bad','⚠️ Zaroori'],['up','📤 Upload'],['info','✨ Baaki']].map(([k, l]) => `<button data-nf="${k}" class="${NF === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+   <div class="card"><div class="bd feed">${xs.map(n => `<div class="it ${n.at > seen ? 'new' : ''}"><div class="ic ${n.kind === 'bad' ? 'error' : 'event'}">${ic[n.kind]}</div>
+     <div class="tx"><b>${esc(n.title)}</b><div style="white-space:pre-wrap">${esc(n.msg)}</div><span class="when">${esc(n.ch)} · ${esc(n.at)}</span></div></div>`).join('') || '<div class="empty">Koi notification nahi</div>'}</div></div>`;
+}
+// ---- ⚙️ settings: chat connection, AI, pause, logins, this device + the system/jobs view
+function settings(){
+  const r = D.runner || {}, paused = r.paused || [], age = D.ts ? Math.round((Date.now() / 1000 - D.ts) / 60) : null;
+  const mac = age == null ? '?' : age <= 25 ? `🟢 Online (${age} min pehle update)` : `🔴 Band / offline — last ${esc(D.generated)}`;
+  const seg = (k, opts, cur) => `<div class="filter" style="margin:0">${opts.map(([v, l]) => `<button data-set="${k}=${v}" class="${cur === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+  const okp = b => `<span class="pill" style="${b ? '' : 'background:var(--warn);color:#fff'}">${b ? '✅ Juda hai' : '⚠️ Dekho'}</span>`;
+  const logins = [].concat(D.channels.map(c => [`YouTube — ${c.name}`, !!c.stats || !(c.alerts || []).some(a => /login|token|auth/i.test(a))]),
+    D.channels.filter(c => c.name === 'Qirvello').flatMap(c => [['Instagram @qirvello', !!(c.social || {}).instagram], ['Facebook Page', !!(c.social || {}).facebook]]),
+    (D.ai || []).map(a => [a.name, a.status === 'ok']), [['Google Drive (archive)', true], ['Phone alerts (ntfy)', true]]);
+  return `<div class="stack">
+   <div class="card"><div class="hd"><h2>🖥️ Mac / Cloud</h2></div><div class="bd"><div class="row"><span class="t">Mac</span><span class="when">${mac}</span></div>
+     <div class="row"><span class="t">Mac band ho to</span><span class="when">Chat ka jawaab cloud se aata hai · scheduled videos YouTube khud live karta hai</span></div></div></div>
+   <div class="card"><div class="hd"><h2>🧠 AI</h2></div><div class="bd"><div class="row"><span class="t">Kaun kaam kare</span>${seg('brain', [['claude','Sirf Claude'],['auto','Claude → Codex'],['codex','Sirf Codex']], r.brain || 'auto')}</div></div></div>
+   <div class="card"><div class="hd"><h2>⏯️ Channels</h2></div><div class="bd">${[['doc-channel','Nyxav Media'],['kahani-channel','Qirvello']].map(([k, n]) => `<div class="row"><span class="t">${n}</span>${seg(paused.includes(k) ? 'resume' : 'pause', paused.includes(k) ? [[k, '▶ Phir chalu karo']] : [[k, '⏸ Roko (naya kaam band)']], '')}<span class="when">${paused.includes(k) ? '⏸ Ruka hua' : '▶ Chal raha'}</span></div>`).join('')}</div></div>
+   <div class="card"><div class="hd"><h2>🔑 Logins / accounts</h2></div><div class="bd">${logins.map(([n, ok]) => `<div class="row"><span class="t">${esc(n)}</span>${okp(ok)}<button class="btn" data-cmd="Mujhe '${esc(n)}' ka login badalna / dobara karna hai — step-by-step batao aur link do jo main phone se khol sakun" style="padding:5px 10px">Badlo</button></div>`).join('')}</div></div>
+   <div class="card"><div class="hd"><h2>📱 Is device par</h2></div><div class="bd">
+     <div class="row"><span class="t">Chat connection</span><span class="when">${TOK() ? '✅ Juda hai' : '❌ Nahi juda'}</span>${TOK() ? '<button class="btn" data-act="untok" style="padding:5px 10px">Hatao</button>' : '<button class="btn primary" data-go="chat" style="padding:5px 10px">Jodo</button>'}</div>
+     <div class="row"><span class="t">Passcode yaad</span><button class="btn" data-act="logout" style="padding:5px 10px">Log out</button></div>
+     <div class="row"><span class="t">Theme</span><button class="btn" data-act="theme" style="padding:5px 10px">Light / Dark</button></div></div></div>
+   </div>` + system();
+}
+
 function scriptsTab(){
   const xs = lib().filter(x => FILT === 'all' || chKey(x.ch) === FILT);
   const lab = {critic:'✍️ Critic', factcheck:'🔎 Fact-check', voice:'🎙️ Voice', visuals:'🎨 Paintings', uploaded:'📤 Upload'};
@@ -283,9 +346,9 @@ function openScript(ch, id){
   const m = document.createElement('div'); m.className = 'modal';
   m.innerHTML = `<div class="box"><div class="mh"><span class="ch-dot ch-${chKey(ch)}"></span><b>${esc(x.title)}</b><button class="btn" data-close style="padding:6px 10px">✕</button></div>
     <div class="mb"><div class="when" style="margin-bottom:8px">${esc(ch)} · ${esc(x.id)} · ${x.lines} lines${x.twist ? ' · twist: ' + esc(x.twist) : ''}</div><ol>${x.preview.map(l => `<li>${esc(l)}</li>`).join('')}</ol></div>
-    <div class="mf"><a class="btn primary" target="_blank" rel="noopener" href="${cmd(`${ch} ${x.id} ki script mein ye badlaav karo: `)}">✏️ Badlaav karwao</a>
-    <a class="btn" target="_blank" rel="noopener" href="${cmd(`${ch} ${x.id} ko abhi banao aur schedule karo (agar sab ready hai)`)}">▶ Abhi banao</a>
-    <a class="btn" target="_blank" rel="noopener" href="${cmd(`${ch} ${x.id} ko roko — upload mat karna, mujhse poochna`)}">⏸ Roko</a></div></div>`;
+    <div class="mf"><button class="btn primary" data-scmd="${esc(`${ch} ${x.id} ki script mein ye badlaav karo: `)}">✏️ Badlaav karwao</button>
+    <button class="btn" data-scmd="${esc(`${ch} ${x.id} ko abhi banao aur schedule karo (agar sab ready hai)`)}">▶ Abhi banao</button>
+    <button class="btn" data-scmd="${esc(`${ch} ${x.id} ko roko — upload mat karna, mujhse poochna`)}">⏸ Roko</button></div></div>`;
   m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.remove(); }); document.body.appendChild(m);
 }
 // ---- chat: live via the GitHub API when the owner saved his token on this device; else the old open-GitHub fallback
@@ -360,31 +423,41 @@ function system(){
    <div class="card"><div class="hd"><span class="dot"></span><h2>Poori activity</h2></div><div class="bd feed">${feedHtml(40)}</div></div></div>`;
 }
 I.ai = '<path d="M12 3l2.2 5.3L20 9l-4.4 3.8L17 18l-5-3-5 3 1.4-5.2L4 9l5.8-.7z"/>';
-const VIEWS = {home:['Overview','home'], content:['Content','film'], chat:['Chat','chat'], ai:['AI','ai'], channels:['Channels','grid'], system:['System','cpu']};
+I.bell = '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>';
+const VIEWS = {home:['Overview','home'], content:['Content','film'], chat:['Chat','chat'], ai:['AI','ai'], channels:['Channels','grid'], system:['Settings','cpu'], inbox:['Notifications','bell']};
 function render(){
   const al = allAlerts().length, title = VIEWS[VIEW][0];
-  const nav = cls => Object.entries(VIEWS).map(([k, [l, ic]]) => `<button class="${cls} ${VIEW === k ? 'on' : ''}" data-go="${k}">${icon(ic)}<span>${l}</span>${k === 'system' && al ? `<span class="cnt">${al}</span>` : ''}${k === 'ai' && (D.ai || []).some(a => a.status !== 'ok') ? `<span class="cnt" style="background:var(--warn)">${(D.ai || []).filter(a => a.status !== 'ok').length}</span>` : ''}</button>`).join('');
+  const bell = sz => `<button class="btn bellb" data-go="inbox" style="padding:6px 8px;position:relative" title="Notifications">${icon('bell', sz)}${unread() ? `<span class="cnt" style="position:absolute;top:-5px;right:-5px">${unread()}</span>` : ''}</button>`;
+  const nav = cls => Object.entries(VIEWS).filter(([k]) => k !== 'inbox').map(([k, [l, ic]]) => `<button class="${cls} ${VIEW === k ? 'on' : ''}" data-go="${k}">${icon(ic)}<span>${l}</span>${k === 'system' && al ? `<span class="cnt">${al}</span>` : ''}${k === 'ai' && (D.ai || []).some(a => a.status !== 'ok') ? `<span class="cnt" style="background:var(--warn)">${(D.ai || []).filter(a => a.status !== 'ok').length}</span>` : ''}</button>`).join('');
   $('#app').innerHTML = `<div class="app"><aside class="side"><div class="logo"><div class="brandmark">CR</div><div><b>Control Room</b><span>2 YouTube · IG · FB</span></div></div>${nav('nav')}
       <div class="foot">Updated ${esc(D.generated)}</div></aside>
-    <div style="min-width:0"><div class="mbar"><div class="brandmark">CR</div><b>${title}</b><div class="right"><button class="btn" data-act="refresh" style="padding:6px 8px">${icon('refresh', 18)}</button><button class="btn" data-act="theme" style="padding:6px 8px">${icon('sun', 18)}</button></div></div>
-    <main class="main"><div class="top"><div><h1>${title}</h1><div class="sub">Updated ${esc(D.generated)} · har 10 min</div></div><div class="right"><span class="pill"><span class="dot"></span>Live</span>
+    <div style="min-width:0"><div class="mbar"><div class="brandmark">CR</div><b>${title}</b><div class="right">${bell(18)}<button class="btn" data-act="refresh" style="padding:6px 8px">${icon('refresh', 18)}</button><button class="btn" data-act="theme" style="padding:6px 8px">${icon('sun', 18)}</button></div></div>
+    <main class="main"><div class="top"><div><h1>${title}</h1><div class="sub">Updated ${esc(D.generated)} · har 10 min</div></div><div class="right"><span class="pill"><span class="dot"></span>Live</span>${bell(16)}
       <button class="btn" data-act="refresh">${icon('refresh', 16)} Refresh</button><button class="btn" data-act="theme">${icon('sun', 16)}</button></div></div>
-    ${({home, content, chat, ai, channels, system})[VIEW]()}</main></div></div><nav class="tabbar">${nav('')}</nav>`;
+    ${({home, content, chat, ai, channels, system: settings, inbox})[VIEW]()}</main></div></div><nav class="tabbar">${nav('')}</nav>`;
   const m = $('#msgs'); if (m) m.scrollTop = m.scrollHeight;
 }
 function toast(t){ const n = document.createElement('div'); n.textContent = t; n.style.cssText = 'position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13px;z-index:9;max-width:90%'; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
 document.addEventListener('click', e => {
+  const dt = !e.target.closest('a') && e.target.closest('[data-det]'); if (dt) { const [c, ep, id] = dt.dataset.det.split('|'); detail(c, ep, id); return; }
+  const sb = e.target.closest('[data-scmd]'); if (sb) { document.querySelector('.modal')?.remove(); sendCmd(sb.dataset.scmd); return; }
   const sc = e.target.closest('[data-script]'); if (sc) { const [ch, id] = sc.dataset.script.split('|'); openScript(ch, id); return; }
   const b = e.target.closest('button'); if (!b || b.form) return;
   if (b.dataset.go) { VIEW = b.dataset.go; if (b.dataset.tab) TAB = b.dataset.tab; LIST = VIEW === 'chat' && innerWidth <= 820 && !CH.cur; chatPoll(VIEW === 'chat'); render(); scrollTo(0, 0); return; }
   if (b.dataset.tab) { TAB = b.dataset.tab; render(); return; }
   if (b.dataset.f) { FILT = b.dataset.f; render(); return; }
+  if (b.dataset.plat) { PLAT = b.dataset.plat; render(); return; }
+  if (b.dataset.nf) { NF = b.dataset.nf; render(); return; }
+  if (b.dataset.set) { const [k, v] = b.dataset.set.split('='); if (!TOK()) { toast('Pehle Chat jodo (Settings → Chat connection)'); return; }
+    sendCmd(`⚙️ set ${k}=${v}`, true); return; }
+  if (b.dataset.act === 'untok') { try { localStorage.removeItem('gh_tok') } catch (x) {} chatPoll(false); render(); return; }
+  if (b.dataset.act === 'logout') { try { localStorage.removeItem('cr_pw'); sessionStorage.removeItem('cr_pw') } catch (x) {} location.reload(); return; }
   if (b.dataset.th) { TH = +b.dataset.th; LIST = false; render(); return; }
   if (b.dataset.thn) { CH.cur = +b.dataset.thn; CH.msgs = []; LIST = false; chatLoad(); return; }
   if (b.id === 'toksave') { const v = $('#tokin').value.trim(); if (!v) return; try { localStorage.setItem('gh_tok', v) } catch (x) {} CH.threads = null; render(); chatPoll(true); return; }
   if (b.id === 'backth') { LIST = true; render(); return; }
   if (b.id === 'newchat') { TH = -1; CH.cur = null; CH.msgs = []; LIST = false; render(); $('#ctext')?.focus(); return; }
-  if (b.dataset.cmd && TOK()) { VIEW = 'chat'; CH.cur = null; render(); $('#ctext').value = b.dataset.cmd; chatSend(); chatPoll(true); return; }
+  if (b.dataset.cmd && TOK()) { sendCmd(b.dataset.cmd); return; }
   if (b.dataset.cmd) { window.open(REPO + '/issues/new?labels=command&title=' + encodeURIComponent(b.dataset.cmd.slice(0, 80)) + '&body=' + encodeURIComponent(b.dataset.cmd), '_blank'); toast('GitHub pe Submit dabao — Claude 1–2 min mein kar dega'); return; }
   if (b.dataset.q) { const t = $('#ctext'); t.value = b.dataset.q; t.focus(); return; }
   if (b.id === 'csend') { if (TOK()) { chatSend(); return; } const txt = $('#ctext').value.trim(); if (!txt) return;
