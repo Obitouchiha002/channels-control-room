@@ -418,7 +418,7 @@ function ai(){
 function system(){
   const r = D.runner || {};
   return `<div class="stack"><div class="card"><div class="hd"><h2>System</h2></div><div class="bd"><div class="row"><span class="t">Kahan chal raha hai</span><span class="pill">${esc(r.runner || 'mac')}</span></div>
-     <div class="row"><span class="t">AI</span><span class="pill">${esc(r.brain || 'claude')} → codex → antigravity</span></div><div class="row"><span class="t">Last update</span><span class="when">${esc(D.generated)}</span></div></div></div>
+     <div class="row"><span class="t">AI</span><span class="pill">${({claude:'Sirf Claude', auto:'Claude → Codex', codex:'Sirf Codex'})[r.brain] || esc(r.brain)}</span></div><div class="row"><span class="t">Last update</span><span class="when">${esc(D.generated)}</span></div></div></div>
    ${D.channels.map(c => `<div class="card"><div class="hd"><span class="ch-dot ch-${chKey(c.name)}"></span><h2>${esc(c.name)} — automatic jobs</h2></div><div class="bd" style="padding-top:12px"><div class="jobs">${c.jobs.map(j => `<div class="job"><b>${esc(j.job)}</b><span class="${jobCls(j.status)}">${esc(j.status)}</span><div class="when">${esc(j.last || '')}</div></div>`).join('')}</div></div></div>`).join('')}
    <div class="card"><div class="hd"><span class="dot"></span><h2>Poori activity</h2></div><div class="bd feed">${feedHtml(40)}</div></div></div>`;
 }
