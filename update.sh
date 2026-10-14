@@ -3,6 +3,7 @@
 # YouTube numbers only every 30 min (API quota). Page files (index/sw/icons/thumbs) → `main` (Pages) only when they change.
 cd /Library/code/channels-autopilot || exit 1
 YT=--no-youtube; [ $(( $(date +%M) % 30 )) -lt 2 ] && YT=""
+python3 /Library/code/channels-autopilot/buffer.py --status >/dev/null 2>&1  # buffer days stay fresh on the dashboard
 /Library/code/doc-channel/.venv/bin/python dashboard/make_status.py $YT >/dev/null || exit 1
 cd /Library/code/channels-dashboard-data && cp ../channels-autopilot/dashboard/status.enc.json . && git add status.enc.json \
   && git commit -q --amend -m "status $(date '+%d %b %H:%M')" && git push -q -f origin data   # one commit, overwritten each time
