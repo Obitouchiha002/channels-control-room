@@ -156,7 +156,7 @@ a{color:inherit}button{font:inherit;cursor:pointer;color:inherit}
 .mbar,.tabbar{display:none}
 @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.grid2{grid-template-columns:1fr!important}}
 @media (max-width:820px){
-  .th16{width:96px}.vgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tabbar{grid-template-columns:repeat(6,1fr)!important}
+  .th16{width:96px}.vgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tabbar{grid-template-columns:repeat(7,1fr)!important}
   .app{grid-template-columns:1fr}.side{display:none}
   .main{padding:14px 14px calc(84px + env(safe-area-inset-bottom))}
   .mbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));border-bottom:1px solid var(--line)}
@@ -200,7 +200,15 @@ a{color:inherit}button{font:inherit;cursor:pointer;color:inherit}
 .acc .ai{flex:1;min-width:0}.acc .ai b{display:block;font-size:17px}.acc .ai span{font-size:13px;color:var(--muted)}
 .acc .st{text-align:center;min-width:64px}.acc .st b{display:block;font-size:20px}.acc .st span{font-size:12px;color:var(--muted)}
 @media (max-width:820px){.plat3 button{font-size:14px}}
-.ch-itihaas{background:#B3261E}.ci.ch-itihaas{border-left-color:#B3261E}
+.ch-itihaas{background:#B3261E}.ch-techbyvansh{background:#1a73e8}.ci.ch-techbyvansh{border-left-color:#1a73e8}.ci.ch-itihaas{border-left-color:#B3261E}
+
+.an .big{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 14px 6px}.an .big div{background:var(--panel2);border-radius:12px;padding:10px 12px}
+.an .big b{display:block;font-size:26px;line-height:1.1;color:var(--ink)}.an .big span{font-size:15px;color:var(--ink);font-weight:500}
+.an .buf{margin:6px 14px;padding:10px 12px;border-radius:12px;font-size:17px;font-weight:600;color:var(--ink);background:color-mix(in srgb,var(--ok) 16%,var(--panel));border:1px solid var(--ok)}
+.an .buf.low{background:color-mix(in srgb,var(--bad) 16%,var(--panel));border-color:var(--bad)}.an .buf.off{background:var(--panel2);border-color:var(--line)}
+.an .vid{display:block;padding:10px 14px;border-top:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:16px;overflow-wrap:anywhere}
+.an .vid small{display:block;font-size:15px;color:var(--ink);opacity:.8;margin-top:2px}.an .live{font-size:14px;font-weight:700;color:var(--ok)}
+.an h3{margin:10px 14px 4px;font-size:16px}
 </style>
 </head>
 <body>
@@ -242,7 +250,7 @@ async function decrypt(pw){
   const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt:b64(e.salt), iterations:200000, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['decrypt']);
   return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM', iv:b64(e.iv)}, key, b64(e.ct))));
 }
-const chKey = n => /nyx/i.test(n) ? 'nyxav' : /itih|gumn/i.test(n) ? 'itihaas' : 'qirvello';
+const chKey = n => /nyx/i.test(n) ? 'nyxav' : /tech/i.test(n) ? 'techbyvansh' : /itih|gumn/i.test(n) ? 'itihaas' : 'qirvello';
 const allAlerts = () => D.channels.flatMap(c => c.alerts.map(a => ({ch:c.name, a})));
 const sum = f => D.channels.reduce((t, c) => t + (+f(c) || 0), 0);
 const jobCls = s => s === 'ok' ? 's-ok' : s.startsWith('failed') ? 's-bad' : (s === 'running' || s.startsWith('AI limit')) ? 's-run' : 's-idle';
@@ -478,6 +486,24 @@ function channels(){
       ${Object.keys(so).length ? `<div class="mini" style="margin-top:8px;grid-template-columns:repeat(2,1fr)">${Object.entries(so).map(([k, v]) => `<a href="${esc(v.url)}" target="_blank" rel="noopener"><div class="n">${v.followers ?? '–'}</div><div class="l">${k === 'instagram' ? '📸 Instagram' : '📘 Facebook'} · ${esc(v.handle)}</div></a>`).join('')}</div>` : ''}
       <div class="mini" style="margin-top:8px"><div><div class="n">${c.counts?.live ?? 0}</div><div class="l">🟢 Live</div></div><div><div class="n">${c.counts?.scheduled ?? 0}</div><div class="l">📅 Scheduled</div></div><div><div class="n">${c.counts?.making ?? 0}</div><div class="l">🛠️ Ban rahe</div></div></div></div>`; }).join('')}</div>`;
 }
+const nfmt = n => n == null ? '—' : new Intl.NumberFormat('en-IN').format(n);
+function analytics(){
+  const live = D.analytics_at ? `<span class="live">● LIVE</span> · ${esc(fmtDT(new Date(D.analytics_at * 1000).toISOString()))}` : '';
+  return D.channels.map(c => { const a = c.analytics, b = c.buffer, d = a && a.d28, nx = (c.upcoming || [])[0];
+    const buf = c.paused ? `<div class="buf off">⏸️ Paused — koi upload nahi</div>` : !b ? `<div class="buf low">Buffer: data nahi mila</div>`
+      : `<div class="buf ${b.days < 2 ? 'low' : ''}">${b.days < 2 ? '🔴' : '🟢'} ${b.days.toFixed(1)} din ka content scheduled (${b.scheduled} video) · agla upload ${esc(nx ? fmtDT(nx.when) : '—')}</div>`;
+    const run = (c.jobs || []).filter(j => j.status === 'running').map(j => j.job);
+    const dur = s => s >= 60 ? Math.floor(s / 60) + 'm ' + (s % 60) + 's' : s + 's';
+    return `<div class="card an" style="margin-bottom:14px"><div class="hd"><span class="ch-dot ch-${chKey(c.name)}"></span><h2>${esc(c.name)}${c.paused ? ' (paused)' : ''}</h2></div>
+      <div class="bd" style="padding:0 0 6px"><div style="padding:0 14px 8px;font-size:15px">${live}</div>
+      ${a ? `<div class="big"><div><b>${nfmt(a.subs)}</b><span>Subscribers</span></div><div><b>${nfmt(a.views)}</b><span>Total views</span></div>
+        <div><b>${d ? nfmt(d.views) : '—'}</b><span>28 din ke views</span></div><div><b>${d ? d.hours : '—'}</b><span>Watch hours (28 din)</span></div>
+        <div><b>${nfmt(a.videos)}</b><span>Videos</span></div><div><b>${d ? '+' + d.subs_gained : '—'}</b><span>Naye subs (28 din)${d ? ' · avg ' + dur(d.avg_s) : ''}</span></div></div>` : '<div class="empty">YouTube numbers abhi nahi mile</div>'}
+      ${buf}${run.length ? `<div style="padding:4px 14px;font-size:16px">⚙️ Chal raha: <b>${esc(run.join(', '))}</b></div>` : ''}
+      ${(c.social || {}).instagram || (c.social || {}).facebook ? `<div style="padding:4px 14px;font-size:16px">📸 IG ${nfmt((c.social.instagram || {}).followers)} · 📘 FB ${nfmt((c.social.facebook || {}).followers)} followers</div>` : ''}
+      ${a && a.recent.length ? `<h3>Last ${a.recent.length} videos</h3>` + a.recent.map(v => `<a class="vid" href="https://youtu.be/${esc(v.id)}" target="_blank" rel="noopener"><b>${esc(v.title)}</b><small>👁 ${nfmt(v.views)} · 👍 ${nfmt(v.likes)} · 💬 ${nfmt(v.comments)} · ${esc(fmtDT(v.at))}</small></a>`).join('') : ''}
+      </div></div>`; }).join('');
+}
 function ai(){
   const S = {ok:'✅ Chal raha', limited:'⏳ Limit lagi', down:'❌ Band'};
   return `<div class="card" style="padding:16px;margin-bottom:16px"><h2 style="margin:0 0 10px;font-size:16px">Agar koi AI ruk jaaye to kaam kaun sambhaalta hai</h2>
@@ -537,8 +563,9 @@ function system(){
    <div class="card"><div class="hd"><span class="dot"></span><h2>Poori activity</h2></div><div class="bd feed">${feedHtml(40)}</div></div></div>`;
 }
 I.ai = '<path d="M12 3l2.2 5.3L20 9l-4.4 3.8L17 18l-5-3-5 3 1.4-5.2L4 9l5.8-.7z"/>';
+I.chart = '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>';
 I.bell = '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>';
-const VIEWS = {home:['Overview','home'], content:['Content','film'], chat:['Chat','chat'], ai:['AI','ai'], channels:['Channels','grid'], system:['Settings','cpu'], inbox:['Notifications','bell']};
+const VIEWS = {home:['Overview','home'], content:['Content','film'], chat:['Chat','chat'], analytics:['Analytics','chart'], ai:['AI','ai'], channels:['Channels','grid'], system:['Settings','cpu'], inbox:['Notifications','bell']};
 function render(){
   const al = allAlerts().length, title = VIEWS[VIEW][0];
   const bell = sz => `<button class="btn bellb" data-go="inbox" style="padding:6px 8px;position:relative" title="Notifications">${icon('bell', sz)}${unread() ? `<span class="cnt" style="position:absolute;top:-5px;right:-5px">${unread()}</span>` : ''}</button>`;
@@ -548,7 +575,7 @@ function render(){
     <div style="min-width:0"><div class="mbar"><div class="brandmark">CR</div><b>${title}</b><div class="right">${bell(18)}<button class="btn" data-act="refresh" style="padding:6px 8px">${icon('refresh', 18)}</button><button class="btn" data-act="theme" style="padding:6px 8px">${icon('sun', 18)}</button></div></div>
     <main class="main"><div class="top"><div><h1>${title}</h1><div class="sub">Updated ${esc(D.generated)} · har 10 min</div></div><div class="right"><span class="pill"><span class="dot"></span>Live</span>${bell(16)}
       <button class="btn" data-act="refresh">${icon('refresh', 16)} Refresh</button><button class="btn" data-act="theme">${icon('sun', 16)}</button></div></div>
-    ${({home, content, chat, ai, channels, system: settings, inbox})[VIEW]()}</main></div></div><nav class="tabbar">${nav('')}</nav>`;
+    ${({home, content, chat, analytics, ai, channels, system: settings, inbox})[VIEW]()}</main></div></div><nav class="tabbar">${nav('')}</nav>`;
   const m = $('#msgs'); if (m) m.scrollTop = m.scrollHeight;
 }
 function toast(t){ const n = document.createElement('div'); n.textContent = t; n.style.cssText = 'position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;z-index:9;max-width:90%'; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
