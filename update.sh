@@ -1,7 +1,15 @@
 #!/bin/zsh
-# Every 30 min: rebuild the encrypted status and publish it to GitHub Pages (only if it changed).
-cd /Library/code/channels-autopilot && /Library/code/doc-channel/.venv/bin/python dashboard/make_status.py >/dev/null || exit 1
-cd /Library/code/channels-dashboard && cp ../channels-autopilot/dashboard/{status.enc.json,index.html,manifest.webmanifest,sw.js,icon-192.png,icon-512.png} . && rsync -a ../channels-autopilot/dashboard/thumbs/ thumbs/
-git fetch -q origin main && git reset -q --soft origin/main  # cloud may have published while the Mac was off: keep its history, but this Mac's files win completely (never merge generated files)
-git add -A && git commit -qm "status $(date '+%d %b %H:%M')" && git push -q origin main
+# Every 2 min: rebuild the encrypted status → the `data` branch (no Pages rebuild; the page reads it via the GitHub API).
+# YouTube numbers only every 30 min (API quota). Page files (index/sw/icons/thumbs) → `main` (Pages) only when they change.
+cd /Library/code/channels-autopilot || exit 1
+YT=--no-youtube; [ $(( $(date +%M) % 30 )) -lt 2 ] && YT=""
+/Library/code/doc-channel/.venv/bin/python dashboard/make_status.py $YT >/dev/null || exit 1
+cd /Library/code/channels-dashboard-data && cp ../channels-autopilot/dashboard/status.enc.json . && git add status.enc.json \
+  && git commit -q --amend -m "status $(date '+%d %b %H:%M')" && git push -q -f origin data   # one commit, overwritten each time
+cd /Library/code/channels-dashboard && cp ../channels-autopilot/dashboard/{index.html,manifest.webmanifest,sw.js,icon-192.png,icon-512.png} . \
+  && cp ../channels-autopilot/dashboard/status.enc.json . && rsync -a ../channels-autopilot/dashboard/thumbs/ thumbs/
+if [ -n "$(git status --porcelain -- index.html sw.js manifest.webmanifest thumbs icon-192.png icon-512.png)" ] || [ -z "$YT" ]; then
+  git fetch -q origin main && git reset -q --soft origin/main  # the cloud may have published: its history stays, this Mac's files win
+  git add -A && git commit -qm "status $(date '+%d %b %H:%M')" && git push -q origin main   # Pages fallback copy + heartbeat (every 30 min)
+fi
 exit 0
