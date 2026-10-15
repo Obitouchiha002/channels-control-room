@@ -581,7 +581,7 @@ const VIEWS = {home:['Overview','home'], content:['Content','film'], chat:['Chat
 // ---- 📲 Instagram Ready: reels the owner posts by hand (Drive download -> add music in Instagram -> paste caption)
 let IGP = new Set((() => { try { return JSON.parse(localStorage.getItem('ig_posted') || '[]') } catch (e) { return [] } })()), IGC = '', IGO = new Set();
 const igList = () => (D.ig_ready || []).filter(x => !IGP.has(x.id));
-const KIND = {story:'📖 Kahani', nostalgia:'🥹 Nostalgia', sher:'🦁 Sher', micro:'⚡ Micro-story'};
+const KIND = {kahani:'📖 Kahani', nostalgia:'🥹 Nostalgia', sher:'🦁 Sher', micro:'⚡ Micro-story'};
 function igready(){
   const xs = igList();
   return `<div class="note" style="font-size:16px;margin-bottom:12px">Video download karo → Instagram mein music lagao → caption paste karo → post karo → "✓ Posted" dabao.</div>` + (xs.map(x => `<div class="card igc">
