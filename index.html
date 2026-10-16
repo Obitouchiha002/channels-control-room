@@ -576,7 +576,7 @@ I.ai = '<path d="M12 3l2.2 5.3L20 9l-4.4 3.8L17 18l-5-3-5 3 1.4-5.2L4 9l5.8-.7z"
 I.chart = '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>';
 I.igr = '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8"/>';
 I.bell = '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>';
-const VIEWS = {home:['Overview','home'], content:['Content','film'], chat:['Chat','chat'], analytics:['Analytics','chart'], ai:['AI','ai'], channels:['Channels','grid'], system:['Settings','cpu'], inbox:['Notifications','bell'], igready:['📲 Instagram Ready','igr'], timbuktu:['Timbuktu','igr']};
+const VIEWS = {home:['Overview','home'], content:['Content','film'], chat:['Chat','chat'], analytics:['Analytics','chart'], ai:['AI','ai'], channels:['Channels','grid'], system:['Settings','cpu'], inbox:['Notifications','bell'], igready:['📲 Instagram Ready','igr']};
 
 // ---- 📲 Instagram Ready: reels the owner posts by hand (Drive download -> add music in Instagram -> paste caption)
 let IGP = new Set((() => { try { return JSON.parse(localStorage.getItem('ig_posted') || '[]') } catch (e) { return [] } })()), IGC = '', IGO = new Set();
@@ -607,69 +607,16 @@ document.addEventListener('click', e => {
     const id = t.dataset.igposted; sendCmd('⚙️ ig posted ' + id, true); IGP.add(id); try { localStorage.setItem('ig_posted', JSON.stringify([...IGP])) } catch (er) {}
     const y = scrollY; render(); scrollTo(0, y); }
 });
-
-// ---- 📲 Timbuktu Ready: Qirvello videos the owner uploads BY HAND to the Timbuktu app (share sheet / Drive download; never automated)
-let TBP = new Set((() => { try { return JSON.parse(localStorage.getItem('tb_done') || '[]') } catch (e) { return [] } })()), TBC = '', TBB = {}, TBS = (() => { try { return localStorage.getItem('tb_setup') === '1' } catch (e) { return false } })();
-const tbAll = () => (D.timbuktu || []), tbList = () => tbAll().filter(x => !x.done && !TBP.has(x.id)), tbDone = () => tbAll().filter(x => x.done || TBP.has(x.id));
-const tbSlot = i => { const d = new Date(Date.now() + 19800000); d.setUTCDate(d.getUTCDate() + 1 + (i >> 1)); return d.toLocaleDateString('en-IN', {weekday:'short', day:'numeric', month:'short', timeZone:'UTC'}) + (i % 2 ? ', 7:00 PM' : ', 12:00 PM'); };
-function tbCopy(txt){
-  return (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).catch(() => { const a = document.createElement('textarea'); a.value = txt; document.body.appendChild(a); a.select(); const ok = document.execCommand('copy'); a.remove(); if (!ok) throw 0; });
-}
-function tbCard(x, i, done){
-  return `<div class="card igc"><${x.thumb ? `img src="${esc(x.thumb)}" alt="" loading="lazy"` : 'div class="ph"'}>
-    <div><span class="kind">${esc(x.series || 'Series')} · Ep ${x.ep}</span> ${x.long ? '<span class="kind">Long 16:9</span>' : ''} ${x.pub ? '' : '<span class="kind" style="background:var(--warn);color:#fff">YouTube par abhi nahi</span>'}<h3>${esc(x.title)}</h3>
-      <div class="meta">Series: ${esc(x.series)} · Ep ${x.ep}${done ? '' : `<br>🗓️ Schedule: <b>${tbSlot(i)}</b>`}</div></div>
-    <div class="wide">
-      ${x.share ? `<button class="igb" data-tbshare="${esc(x.id)}" data-w="video" style="font-size:19px;padding:16px 10px">📤 Timbuktu mein bhejo</button><button class="igb alt" data-tbshare="${esc(x.id)}" data-w="thumb">🖼️ Thumbnail bhejo</button>` : ''}
-      ${x.dl_video ? `<a class="igb alt" href="${esc(x.dl_video)}" target="_blank" rel="noopener">⬇️ Video</a>` : '<span class="igb off">⏳ Drive par upload ho raha hai…</span>'}
-      ${x.dl_thumb ? `<a class="igb alt" href="${esc(x.dl_thumb)}" target="_blank" rel="noopener">🖼️ Thumbnail</a>` : ''}
-      <button class="igb alt" data-tbcopy="${esc(x.id)}">${TBC === x.id ? 'Copied ✓' : '📋 Caption copy'}</button>
-      <button class="igb alt" data-igcap="tb:${esc(x.id)}">${IGO.has('tb:' + x.id) ? '▲ Caption chhupao' : '📝 Caption dekho'}</button>
-      ${IGO.has('tb:' + x.id) ? `<pre>${esc(x.caption)}</pre>` : ''}
-      ${done ? '' : `<button class="igb ok" data-tbdone="${esc(x.id)}">✓ Upload ho gaya</button>`}</div></div>`;
-}
-function timbuktu(){
-  const xs = tbList(), ds = tbDone(), p = D.timbuktu_profile || {};
-  const setup = p.bio ? `<div class="card igc" style="display:block"><button class="igb alt" data-tbsetup style="margin:0">${TBS ? '▶ Profile setup (ho gaya)' : '▼ Profile setup'}</button>${TBS ? '' : `
-    <div style="display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;margin-top:12px">${p.photo ? `<img src="${esc(p.photo)}" alt="" style="aspect-ratio:1;border-radius:50%">` : ''}<div><b>Qirvello</b><div class="meta">@qirvello</div></div></div>
-    ${p.photo ? `<a class="igb alt" href="${esc(p.photo)}" download="profile-photo.jpg">⬇️ Profile photo</a>` : ''}${p.banner ? `<a class="igb alt" href="${esc(p.banner)}" download="cover-banner.png">⬇️ Banner</a>` : ''}
-    <button class="igb alt" data-tbtxt="bio">${TBC === 'bio' ? 'Copied ✓' : '📋 Bio copy'}</button><button class="igb alt" data-tbtxt="links">${TBC === 'links' ? 'Copied ✓' : '📋 Links copy'}</button>
-    <pre>${esc(p.bio)}</pre><div class="meta" style="margin-top:8px">Series banao: <b>${(p.series || []).map(esc).join(' • ')}</b></div>
-    <button class="igb ok" data-tbsetup>✓ Profile setup ho gaya</button>`}</div>` : '';
-  return `<div class="note" style="font-size:16px;margin-bottom:12px">Timbuktu mein sirf haath se upload hota hai. "📤 Timbuktu mein bhejo" dabao → caption copy ho jayega, Timbuktu app chuno → upload → "✓ Upload ho gaya".</div>` + setup +
-    (xs.map((x, i) => tbCard(x, i, false)).join('') || '<div class="card"><div class="bd"><div class="empty">Sab upload ho gaya 🎉</div></div></div>') +
-    (ds.length ? `<details style="margin-top:12px"><summary class="note" style="font-size:16px;cursor:pointer">✓ Done (${ds.length})</summary>${ds.map(x => tbCard(x, 0, true)).join('')}</details>` : '');
-}
-document.addEventListener('click', async e => {
-  const t = e.target.closest('[data-tbcopy],[data-tbtxt],[data-tbsetup],[data-tbshare],[data-tbdone]'); if (!t) return;
-  const find = id => tbAll().find(x => x.id === id), redraw = () => { const y = scrollY; render(); scrollTo(0, y); };
-  const copied = k => { TBC = k; redraw(); setTimeout(() => { if (TBC === k) { TBC = ''; if (VIEW === 'timbuktu') redraw(); } }, 2500); };
-  if (t.dataset.tbsetup !== undefined) { TBS = !TBS; try { localStorage.setItem('tb_setup', TBS ? '1' : '0') } catch (er) {} redraw(); return; }
-  if (t.dataset.tbtxt) { tbCopy((D.timbuktu_profile || {})[t.dataset.tbtxt] || '').then(() => copied(t.dataset.tbtxt)).catch(() => toast('Copy nahi hua')); return; }
-  if (t.dataset.tbcopy) { tbCopy(find(t.dataset.tbcopy).caption).then(() => copied(t.dataset.tbcopy)).catch(() => toast('Copy nahi hua — "Caption dekho" se copy karo')); return; }
-  if (t.dataset.tbdone) { if (!TOK()) { toast('Pehle Chat jodo (Settings → Chat connection)'); return; }
-    const id = t.dataset.tbdone; sendCmd('⚙️ timbuktu done ' + id, true); TBP.add(id); try { localStorage.setItem('tb_done', JSON.stringify([...TBP])) } catch (er) {} redraw(); return; }
-  if (t.dataset.tbshare) {  // caption -> clipboard, then the phone share sheet with the file (the bytes are fetched once, so the 2nd tap shares at once)
-    const x = find(t.dataset.tbshare), th = t.dataset.w === 'thumb', name = th ? 'thumbnail.jpg' : 'video.mp4', url = x.share + name;
-    tbCopy(x.caption).catch(() => {});
-    try {
-      if (!TBB[url]) { toast('⏳ File taiyaar ho rahi hai…'); const r = await fetch(url); if (!r.ok) throw 0; TBB[url] = new File([await r.blob()], name, {type: th ? 'image/jpeg' : 'video/mp4'}); }
-      const f = TBB[url];
-      if (navigator.canShare && navigator.canShare({files: [f]})) { try { await navigator.share({files: [f], text: x.caption}); } catch (er) { if (er.name !== 'AbortError') toast('Caption copy ho gaya — ek baar aur dabao'); } }
-      else { const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = name; a.click(); toast('Caption copy ho gaya. Is phone par share nahi chala — file download ho gayi, Timbuktu mein wahin se chuno.'); }
-    } catch (er) { toast('File abhi tak online nahi aayi (1-2 min) — "⬇️ Video" se Drive se lo. Caption copy ho gaya.'); }
-  }
-});
 function render(){
   const al = allAlerts().length, title = VIEWS[VIEW][0];
   const bell = sz => `<button class="btn bellb" data-go="inbox" style="padding:6px 8px;position:relative" title="Notifications">${icon('bell', sz)}${unread() ? `<span class="cnt" style="position:absolute;top:-5px;right:-5px">${unread()}</span>` : ''}</button>`;
-  const nav = cls => Object.entries(VIEWS).filter(([k]) => k !== 'inbox').map(([k, [l, ic]]) => `<button class="${cls} ${VIEW === k ? 'on' : ''}" data-go="${k}">${icon(ic)}<span>${k === 'igready' ? 'IG Ready' : l}</span>${k === 'timbuktu' && tbList().length ? `<span class="cnt" style="background:var(--accent)">${tbList().length}</span>` : ''}${k === 'igready' && igList().length ? `<span class="cnt" style="background:var(--accent)">${igList().length}</span>` : ''}${k === 'system' && al ? `<span class="cnt">${al}</span>` : ''}${k === 'ai' && (D.ai || []).some(a => a.status !== 'ok') ? `<span class="cnt" style="background:var(--warn)">${(D.ai || []).filter(a => a.status !== 'ok').length}</span>` : ''}</button>`).join('');
+  const nav = cls => Object.entries(VIEWS).filter(([k]) => k !== 'inbox').map(([k, [l, ic]]) => `<button class="${cls} ${VIEW === k ? 'on' : ''}" data-go="${k}">${icon(ic)}<span>${k === 'igready' ? 'IG Ready' : l}</span>${k === 'igready' && igList().length ? `<span class="cnt" style="background:var(--accent)">${igList().length}</span>` : ''}${k === 'system' && al ? `<span class="cnt">${al}</span>` : ''}${k === 'ai' && (D.ai || []).some(a => a.status !== 'ok') ? `<span class="cnt" style="background:var(--warn)">${(D.ai || []).filter(a => a.status !== 'ok').length}</span>` : ''}</button>`).join('');
   $('#app').innerHTML = `<div class="app"><aside class="side"><div class="logo"><div class="brandmark">CR</div><div><b>Control Room</b><span>3 channels · YouTube · IG · FB</span></div></div>${nav('nav')}
       <div class="foot">Updated ${esc(D.generated)}</div></aside>
     <div style="min-width:0"><div class="mbar"><div class="brandmark">CR</div><b>${title}</b><div class="right">${bell(18)}<button class="btn" data-act="refresh" style="padding:6px 8px">${icon('refresh', 18)}</button><button class="btn" data-act="theme" style="padding:6px 8px">${icon('sun', 18)}</button></div></div>
     <main class="main"><div class="top"><div><h1>${title}</h1><div class="sub">Updated ${esc(D.generated)} · har 10 min</div></div><div class="right"><span class="pill"><span class="dot"></span>Live</span>${bell(16)}
       <button class="btn" data-act="refresh">${icon('refresh', 16)} Refresh</button><button class="btn" data-act="theme">${icon('sun', 16)}</button></div></div>
-    ${({home, content, chat, analytics, ai, channels, system: settings, inbox, igready, timbuktu})[VIEW]()}</main></div></div><nav class="tabbar">${nav('')}</nav>`;
+    ${({home, content, chat, analytics, ai, channels, system: settings, inbox, igready})[VIEW]()}</main></div></div><nav class="tabbar">${nav('')}</nav>`;
   const m = $('#msgs'); if (m) m.scrollTop = m.scrollHeight;
 }
 function toast(t){ const n = document.createElement('div'); n.textContent = t; n.style.cssText = 'position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;z-index:9;max-width:90%'; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
